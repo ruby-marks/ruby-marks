@@ -1,4 +1,3 @@
-$:.push File.expand_path("../lib", __FILE__)
-
 require 'rubygems'
+require 'RMagick'
 require 'ruby_marks/document'
