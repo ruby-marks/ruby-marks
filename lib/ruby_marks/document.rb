@@ -19,11 +19,29 @@ module RubyMarks
 
     def marked?
       if self.current_position
-        color = @file.pixel_color(current_position[:x], current_position[:y])
-        color = RubyMarks::RGB.to_hex(color.red, color.green, color.blue)
-        p color 
-        return color == "#000000" ? true : false
+        area_x = 8
+        area_y = 8
+
+        x_pos = current_position[:x]-area_x..current_position[:x]+area_x
+        y_pos = current_position[:y]-area_y..current_position[:y]+area_y
+
+        colors = []
+
+        y_pos.each do |y|
+          x_pos.each do |x|
+            color = @file.pixel_color(x, y)
+            color = RubyMarks::RGB.to_hex(color.red, color.green, color.blue)
+            color = (color == "#000000") ? "." : " "
+            colors << color
+          end
+        end
+        black_intensity = colors.count(".") * 100 / colors.size
+        return black_intensity >= 75 ? true : false
       end
+    end
+
+    def unmarked?
+      !marked?
     end
 
     def flag_position
@@ -41,6 +59,24 @@ module RubyMarks
       end
 
       file
+    end
+
+    def clock_list
+      clocks = []
+      x = 62
+      in_clock = false
+      total_height = @file && @file.page.height || 0
+      total_height.times do |y|
+        color = @file.pixel_color(x, y)
+        color = RubyMarks::RGB.to_hex(color.red, color.green, color.blue)
+        if !in_clock && color == "#000000"
+          in_clock = true
+          clocks << y
+        elsif in_clock && color != "#000000"
+          in_clock = false
+        end        
+      end
+      clocks
     end
   end
 
