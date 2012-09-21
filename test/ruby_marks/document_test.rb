@@ -37,9 +37,8 @@ class RubyMarks::DocumentTest < Test::Unit::TestCase
   end
 
   def test_should_recognize_the_document_clock_marks
-    p @document.clock_list
-    assert_equal 20, @document.clock_list.count
-
+    @document.scan_clock_marks
+    assert_equal 20, @document.clock_marks.count
   end
 end
  

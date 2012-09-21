@@ -6,11 +6,12 @@ module RubyMarks
 
     attr_reader :file
 
-    attr_accessor :current_position
+    attr_accessor :current_position, :clock_marks
 
     def initialize(file)
       @file = Magick::Image.read(file).first
       @current_position = {x: 0, y: 0}
+      @clock_marks = [] 
     end
 
     def filename
@@ -61,22 +62,24 @@ module RubyMarks
       file
     end
 
-    def clock_list
-      clocks = []
+    def scan_clock_marks
+      @clock_marks = []
       x = 62
       in_clock = false
       total_height = @file && @file.page.height || 0
-      total_height.times do |y|
-        color = @file.pixel_color(x, y)
-        color = RubyMarks::RGB.to_hex(color.red, color.green, color.blue)
-        if !in_clock && color == "#000000"
-          in_clock = true
-          clocks << y
-        elsif in_clock && color != "#000000"
-          in_clock = false
-        end        
+      @clock_marks.tap do |clock_marks| 
+        total_height.times do |y|
+          clock = {}
+          color = @file.pixel_color(x, y)
+          color = RubyMarks::RGB.to_hex(color.red, color.green, color.blue)
+          if !in_clock && color == "#000000"
+            in_clock = true
+            clock_marks << RubyMarks::ClockMark.new(document: self, position: {x: x, y: y})
+          elsif in_clock && color != "#000000"
+            in_clock = false
+          end        
+        end
       end
-      clocks
     end
   end
 

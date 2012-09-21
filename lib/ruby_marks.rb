@@ -1,6 +1,7 @@
 require 'rubygems'
 require 'RMagick'
 require 'ruby_marks/document'
+require 'ruby_marks/clock_mark'
 require 'ruby_marks/rgb'
 require 'ruby_marks/version'
 
