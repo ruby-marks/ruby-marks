@@ -41,12 +41,38 @@ module RubyMarks
           end
         end
         black_intensity = colors.count(".") * 100 / colors.size
-        return black_intensity >= 75 ? true : false
+        return black_intensity >= 40 ? true : false
       end
     end
 
     def unmarked?
       !marked?
+    end
+
+    def scan
+      result = {}
+      result.tap do |result|
+        position_before = @current_position
+    
+        scan_clock_marks unless clock_marks.any?
+        groups = [87, 310, 535, 760, 985]
+        marks = %w{A B C D E}
+        clock_marks.each_with_index do |clock_mark, index|
+          group_hash = {}
+          groups.each_with_index do |group, index|
+            @current_position = {x: clock_mark.coordinates[:x2], y: clock_mark.vertical_middle_position}
+            move_to(group, 0)
+            markeds = []
+            marks.each do |mark|
+              markeds << mark if marked?
+              move_to(25, 0)
+            end
+            group_hash["group_#{index+1}".to_sym] = markeds if markeds.any?
+          end
+          result["clock_#{index+1}".to_sym] = group_hash if group_hash.any?
+        end
+        @current_position = position_before
+      end
     end
 
     def flag_position
@@ -106,8 +132,7 @@ module RubyMarks
     private
     def add_mark(file)
       flag = Magick::Draw.new
-      p current_position
-      file.annotate(flag, 0, 0, current_position[:x] - 12, current_position[:y] + 13, "+") do
+      file.annotate(flag, 0, 0, current_position[:x] - 12, current_position[:y] + 15, "+") do
         self.pointsize = 41
         self.stroke = '#000000'
         self.fill = '#C00000'

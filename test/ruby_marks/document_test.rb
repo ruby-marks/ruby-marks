@@ -9,7 +9,6 @@ class RubyMarks::DocumentTest < Test::Unit::TestCase
     @positions[:marked_position] = {x: 161, y: 794}
     @positions[:unmarked_position] = {x: 161, y: 994}
     @positions[:first_clock_position] = {x: 62, y: 794}
-
   end
 
   def test_should_initialize_a_document_with_a_valid_file
@@ -57,5 +56,26 @@ class RubyMarks::DocumentTest < Test::Unit::TestCase
     assert_equal expected_position, @document.move_to(10, 20)
   end
 
+  def test_should_scan_the_document_and_get_a_hash_of_marked_marks
+    expected_hash = { 
+      clock_1: {  
+        group_1: ['A']
+      },
+      clock_2: {  
+        group_1: ['B']
+      },
+      clock_3: {  
+        group_1: ['C']
+      },
+      clock_4: {  
+        group_1: ['D']
+      },
+      clock_5: {  
+        group_1: ['E']
+      }
+    }
+    p @document.scan 
+    assert_equal expected_hash, @document.scan 
+  end
 end
  
