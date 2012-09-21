@@ -40,5 +40,22 @@ class RubyMarks::DocumentTest < Test::Unit::TestCase
     @document.scan_clock_marks
     assert_equal 20, @document.clock_marks.count
   end
+
+  def test_should_return_the_document_with_all_marks_flagged
+    flagged_document = @document.flag_all_marks
+    assert_equal Magick::Image, flagged_document.class
+
+    temp_filename = "temp_sheet_demo2.png"
+    File.delete(temp_filename) if File.exist?(temp_filename)
+    flagged_document.write(temp_filename)    
+  end
+
+  def test_should_move_the_current_position_in_10_and_20_pixels
+    @document.current_position = @positions[:marked_position]
+    expected_position = {x: 171, y: 814}
+
+    assert_equal expected_position, @document.move_to(10, 20)
+  end
+
 end
  

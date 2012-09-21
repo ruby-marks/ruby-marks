@@ -54,7 +54,6 @@ module RubyMarks
 
             break if color != "#000000" || coordinates[:y2] >= self.document.file.page.height
           end 
-
         end
       end
     end

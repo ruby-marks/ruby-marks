@@ -18,6 +18,10 @@ module RubyMarks
       @file.filename
     end
 
+    def move_to(x, y)
+      @current_position = {x: @current_position[:x] + x, y: @current_position[:y] + y}
+    end
+
     def marked?
       if self.current_position
         area_x = 8
@@ -46,20 +50,37 @@ module RubyMarks
     end
 
     def flag_position
-      flag = Magick::Draw.new
       file = @file.dup
 
-      if self.current_position
-        file.annotate(flag, 0, 0, current_position[:x] - 12, current_position[:y] + 15, "+") do
-          #self.gravity = Magick::NorthGravity
-          self.pointsize = 41
-          self.stroke = '#000000'
-          self.fill = '#C00000'
-          self.font_weight = Magick::BoldWeight
+      file.tap do |file|
+        if current_position
+          add_mark file
         end
       end
+    end
 
-      file
+    def flag_all_marks
+      file = @file.dup
+
+      file.tap do |file|
+        position_before = @current_position
+    
+        scan_clock_marks unless clock_marks.any?
+        groups = [87, 310, 535, 760, 985]
+        marks = %w{A B C D E}
+        clock_marks.each do |clock_mark|
+          groups.each do |group|
+            @current_position = {x: clock_mark.coordinates[:x2], y: clock_mark.vertical_middle_position}
+            move_to(group, 0)
+            marks.each do |mark|
+              add_mark file
+              move_to(25, 0)
+            end
+          end
+        end
+
+        @current_position = position_before
+      end
     end
 
     def scan_clock_marks
@@ -74,13 +95,26 @@ module RubyMarks
           color = RubyMarks::RGB.to_hex(color.red, color.green, color.blue)
           if !in_clock && color == "#000000"
             in_clock = true
-            clock_marks << RubyMarks::ClockMark.new(document: self, position: {x: x, y: y})
+            clock_marks << RubyMarks::ClockMark.new(document: self, position: {x: x, y: y+3})
           elsif in_clock && color != "#000000"
             in_clock = false
           end        
         end
       end
     end
+
+    private
+    def add_mark(file)
+      flag = Magick::Draw.new
+      p current_position
+      file.annotate(flag, 0, 0, current_position[:x] - 12, current_position[:y] + 13, "+") do
+        self.pointsize = 41
+        self.stroke = '#000000'
+        self.fill = '#C00000'
+        self.font_weight = Magick::BoldWeight
+      end
+    end
+
   end
 
 end

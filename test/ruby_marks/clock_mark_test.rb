@@ -35,6 +35,4 @@ class RubyMarks::ClockMarkTest < Test::Unit::TestCase
     assert_equal 796, clock.vertical_middle_position
   end
 
-
-
 end
