@@ -15,4 +15,26 @@ class RubyMarks::ClockMarkTest < Test::Unit::TestCase
     assert_equal expected_coordinates, clock.calc_coordinates
   end
 
+  def test_should_obtain_the_clock_mark_width
+    clock = RubyMarks::ClockMark.new(document: @document, position: @positions[:first_clock_position])
+    assert_equal 27, clock.width
+  end
+
+  def test_should_obtain_the_clock_mark_height
+    clock = RubyMarks::ClockMark.new(document: @document, position: @positions[:first_clock_position])
+    assert_equal 12, clock.height
+  end
+
+  def test_should_obtain_the_horizontal_middle_position
+    clock = RubyMarks::ClockMark.new(document: @document, position: @positions[:first_clock_position])
+    assert_equal 61, clock.horizontal_middle_position
+  end  
+
+  def test_should_obtain_the_vertical_middle_position
+    clock = RubyMarks::ClockMark.new(document: @document, position: @positions[:first_clock_position])
+    assert_equal 796, clock.vertical_middle_position
+  end
+
+
+
 end

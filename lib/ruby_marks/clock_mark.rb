@@ -59,6 +59,22 @@ module RubyMarks
       end
     end
 
+    def width
+      coordinates[:x2] - coordinates[:x1]
+    end    
+
+    def height
+      coordinates[:y2] - coordinates[:y1]
+    end
+
+    def horizontal_middle_position
+      coordinates[:x1] + self.width / 2
+    end
+
+    def vertical_middle_position
+      coordinates[:y1] + self.height / 2
+    end
+
     def to_s
       self.coordinates
     end
