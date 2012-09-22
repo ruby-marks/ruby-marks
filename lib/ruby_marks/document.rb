@@ -6,16 +6,22 @@ module RubyMarks
 
     attr_reader :file
 
-    attr_accessor :current_position, :clock_marks
+    attr_accessor :current_position, :clock_marks, :config
 
     def initialize(file)
       @file = Magick::Image.read(file).first
       @current_position = {x: 0, y: 0}
       @clock_marks = [] 
+      @config = RubyMarks::Config.new
     end
 
     def filename
       @file.filename
+    end
+
+    def configure
+      @config ||= RubyMarks::Config.new
+      yield self.config
     end
 
     def move_to(x, y)
@@ -111,7 +117,7 @@ module RubyMarks
 
     def scan_clock_marks
       @clock_marks = []
-      x = 62
+      x = @config.clock_marks_scan_x
       in_clock = false
       total_height = @file && @file.page.height || 0
       @clock_marks.tap do |clock_marks| 

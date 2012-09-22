@@ -1,6 +1,7 @@
 require 'rubygems'
 require 'RMagick'
 require 'ruby_marks/document'
+require 'ruby_marks/config'
 require 'ruby_marks/clock_mark'
 require 'ruby_marks/rgb'
 require 'ruby_marks/version'
@@ -15,3 +16,5 @@ if magick_version =~ /Q16/
         http://rubyforge.org/forum/forum.php?thread_id=10975&forum_id=1618 ***
   }
 end
+
+@@clock_marks_scan_x = 62

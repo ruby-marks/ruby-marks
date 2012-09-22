@@ -15,14 +15,21 @@ class RubyMarks::DocumentTest < Test::Unit::TestCase
     assert_equal @file, @document.filename
   end
 
+  def test_should_pass_the_configuration_to_document_config
+    @document.configure do |config|
+      config.clock_marks_scan_x = 30
+    end
+    assert_equal 30, @document.config.clock_marks_scan_x
+  end
+
   def test_should_return_a_file_with_a_position_flagged
     @document.current_position = @positions[:first_clock_position]
     flagged_document = @document.flag_position
     assert_equal Magick::Image, flagged_document.class
 
-    temp_filename = "temp_sheet_demo1.png"
-    File.delete(temp_filename) if File.exist?(temp_filename)
-    flagged_document.write(temp_filename)
+    # temp_filename = "temp_sheet_demo1.png"
+    # File.delete(temp_filename) if File.exist?(temp_filename)
+    # flagged_document.write(temp_filename)
   end
 
   def test_should_recognize_marked_position
@@ -44,9 +51,9 @@ class RubyMarks::DocumentTest < Test::Unit::TestCase
     flagged_document = @document.flag_all_marks
     assert_equal Magick::Image, flagged_document.class
 
-    temp_filename = "temp_sheet_demo2.png"
-    File.delete(temp_filename) if File.exist?(temp_filename)
-    flagged_document.write(temp_filename)    
+    # temp_filename = "temp_sheet_demo2.png"
+    # File.delete(temp_filename) if File.exist?(temp_filename)
+    # flagged_document.write(temp_filename)    
   end
 
   def test_should_move_the_current_position_in_10_and_20_pixels
@@ -59,22 +66,28 @@ class RubyMarks::DocumentTest < Test::Unit::TestCase
   def test_should_scan_the_document_and_get_a_hash_of_marked_marks
     expected_hash = { 
       clock_1: {  
-        group_1: ['A']
+        group_1: ['A'],
+        group_2: ['A']
       },
       clock_2: {  
-        group_1: ['B']
+        group_1: ['B'],
+        group_2: ['B']
       },
       clock_3: {  
-        group_1: ['C']
+        group_1: ['C'],
+        group_2: ['C'],
+        group_3: ['D']        
       },
       clock_4: {  
-        group_1: ['D']
+        group_1: ['D'],
+        group_2: ['D'],
+        group_3: ['D']
       },
       clock_5: {  
-        group_1: ['E']
+        group_1: ['E'],
+        group_2: ['E']
       }
     }
-    p @document.scan 
     assert_equal expected_hash, @document.scan 
   end
 end
