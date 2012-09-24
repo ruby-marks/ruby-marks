@@ -9,6 +9,28 @@ class RubyMarks::DocumentTest < Test::Unit::TestCase
     @positions[:marked_position] = {x: 161, y: 794}
     @positions[:unmarked_position] = {x: 161, y: 994}
     @positions[:first_clock_position] = {x: 62, y: 794}
+
+    @document.configure do |config|
+      config.define_group :first  do |group| 
+        group.x_distance_from_clock = 87
+      end
+
+      config.define_group :second do |group| 
+        group.x_distance_from_clock = 310
+      end
+
+      config.define_group :third  do |group| 
+        group.x_distance_from_clock = 535
+      end
+
+      config.define_group :fourth do |group| 
+        group.x_distance_from_clock = 760
+      end
+
+      config.define_group :fifth  do |group| 
+        group.x_distance_from_clock = 985
+      end
+    end
   end
 
   def test_should_initialize_a_document_with_a_valid_file
@@ -20,6 +42,15 @@ class RubyMarks::DocumentTest < Test::Unit::TestCase
       config.clock_marks_scan_x = 30
     end
     assert_equal 30, @document.config.clock_marks_scan_x
+  end
+
+  def test_should_get_the_default_configuration_of_config_in_group
+    @document.configure do |config|
+      config.default_marks_options = %w{1 2 3}
+
+      config.define_group :one
+    end
+    assert_equal %w{1 2 3}, @document.groups[:one].marks_options
   end
 
   def test_should_return_a_file_with_a_position_flagged
@@ -66,26 +97,26 @@ class RubyMarks::DocumentTest < Test::Unit::TestCase
   def test_should_scan_the_document_and_get_a_hash_of_marked_marks
     expected_hash = { 
       clock_1: {  
-        group_1: ['A'],
-        group_2: ['A']
+        group_first: ['A'],
+        group_second: ['A']
       },
       clock_2: {  
-        group_1: ['B'],
-        group_2: ['B']
+        group_first: ['B'],
+        group_second: ['B']
       },
       clock_3: {  
-        group_1: ['C'],
-        group_2: ['C'],
-        group_3: ['D']        
+        group_first: ['C'],
+        group_second: ['C'],
+        group_third: ['D']        
       },
       clock_4: {  
-        group_1: ['D'],
-        group_2: ['D'],
-        group_3: ['D']
+        group_first: ['D'],
+        group_second: ['D'],
+        group_third: ['D']
       },
       clock_5: {  
-        group_1: ['E'],
-        group_2: ['E']
+        group_first: ['E'],
+        group_second: ['E']
       }
     }
     assert_equal expected_hash, @document.scan 

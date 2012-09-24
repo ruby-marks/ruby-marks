@@ -6,22 +6,31 @@ module RubyMarks
 
     attr_reader :file
 
-    attr_accessor :current_position, :clock_marks, :config
+    attr_accessor :current_position, :clock_marks, :config, :groups
 
     def initialize(file)
       @file = Magick::Image.read(file).first
       @current_position = {x: 0, y: 0}
-      @clock_marks = [] 
-      @config = RubyMarks::Config.new
+      @clock_marks = []
+      @groups = {} 
+      self.create_config
+    end
+
+    def create_config
+      @config ||= RubyMarks::Config.new(self)
     end
 
     def filename
       @file.filename
     end
 
-    def configure
-      @config ||= RubyMarks::Config.new
-      yield self.config
+    def configure(&block)
+      self.create_config
+      @config.configure(&block) 
+    end
+
+    def add_group(group)
+      @groups[group.label] = group if group
     end
 
     def move_to(x, y)
@@ -42,12 +51,12 @@ module RubyMarks
           x_pos.each do |x|
             color = @file.pixel_color(x, y)
             color = RubyMarks::RGB.to_hex(color.red, color.green, color.blue)
-            color = (color == "#000000") ? "." : " "
+            color = @config.recognition_colors.include?(color) ? "." : " "
             colors << color
           end
         end
-        black_intensity = colors.count(".") * 100 / colors.size
-        return black_intensity >= 40 ? true : false
+        intensity = colors.count(".") * 100 / colors.size
+        return intensity >= @config.intensity_percentual ? true : false
       end
     end
 
@@ -59,21 +68,19 @@ module RubyMarks
       result = {}
       result.tap do |result|
         position_before = @current_position
-    
         scan_clock_marks unless clock_marks.any?
-        groups = [87, 310, 535, 760, 985]
-        marks = %w{A B C D E}
+    
         clock_marks.each_with_index do |clock_mark, index|
           group_hash = {}
-          groups.each_with_index do |group, index|
+          @groups.each do |key, group|
             @current_position = {x: clock_mark.coordinates[:x2], y: clock_mark.vertical_middle_position}
-            move_to(group, 0)
+            move_to(group.x_distance_from_clock, 0)
             markeds = []
-            marks.each do |mark|
+            group.marks_options.each do |mark|
               markeds << mark if marked?
               move_to(25, 0)
             end
-            group_hash["group_#{index+1}".to_sym] = markeds if markeds.any?
+            group_hash["group_#{key}".to_sym] = markeds if markeds.any?
           end
           result["clock_#{index+1}".to_sym] = group_hash if group_hash.any?
         end

@@ -3,6 +3,7 @@ require 'RMagick'
 require 'ruby_marks/document'
 require 'ruby_marks/config'
 require 'ruby_marks/clock_mark'
+require 'ruby_marks/group'
 require 'ruby_marks/rgb'
 require 'ruby_marks/version'
 
@@ -18,3 +19,9 @@ if magick_version =~ /Q16/
 end
 
 @@clock_marks_scan_x = 62
+
+@@intensity_percentual = 40
+
+@@recognition_colors = ["#000000"]
+
+@@default_marks_options = %w{A B C D E}
