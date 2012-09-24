@@ -73,14 +73,16 @@ module RubyMarks
         clock_marks.each_with_index do |clock_mark, index|
           group_hash = {}
           @groups.each do |key, group|
-            @current_position = {x: clock_mark.coordinates[:x2], y: clock_mark.vertical_middle_position}
-            move_to(group.x_distance_from_clock, 0)
-            markeds = []
-            group.marks_options.each do |mark|
-              markeds << mark if marked?
-              move_to(25, 0)
+            if group.clocks_range.include?(index)
+              @current_position = {x: clock_mark.coordinates[:x2], y: clock_mark.vertical_middle_position}
+              move_to(group.x_distance_from_clock, 0)
+              markeds = []
+              group.marks_options.each do |mark|
+                markeds << mark if marked?
+                move_to(25, 0)
+              end
+              group_hash["group_#{key}".to_sym] = markeds if markeds.any?
             end
-            group_hash["group_#{key}".to_sym] = markeds if markeds.any?
           end
           result["clock_#{index+1}".to_sym] = group_hash if group_hash.any?
         end
