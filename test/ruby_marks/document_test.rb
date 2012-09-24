@@ -11,23 +11,28 @@ class RubyMarks::DocumentTest < Test::Unit::TestCase
     @positions[:first_clock_position] = {x: 62, y: 794}
 
     @document.configure do |config|
-      config.define_group :first  do |group| 
+      config.define_group :first  do |group|
+        group.clocks_range = 1..20 
         group.x_distance_from_clock = 87
       end
 
       config.define_group :second do |group| 
+        group.clocks_range = 1..20         
         group.x_distance_from_clock = 310
       end
 
       config.define_group :third  do |group| 
+        group.clocks_range = 1..20 
         group.x_distance_from_clock = 535
       end
 
       config.define_group :fourth do |group| 
+        group.clocks_range = 1..20 
         group.x_distance_from_clock = 760
       end
 
       config.define_group :fifth  do |group| 
+        group.clocks_range = 1..20 
         group.x_distance_from_clock = 985
       end
     end

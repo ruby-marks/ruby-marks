@@ -73,7 +73,7 @@ module RubyMarks
         clock_marks.each_with_index do |clock_mark, index|
           group_hash = {}
           @groups.each do |key, group|
-            if group.clocks_range.include?(index)
+            if group.belongs_to_clock?(index + 1)
               @current_position = {x: clock_mark.coordinates[:x2], y: clock_mark.vertical_middle_position}
               move_to(group.x_distance_from_clock, 0)
               markeds = []
@@ -108,13 +108,15 @@ module RubyMarks
     
         scan_clock_marks unless clock_marks.any?
 
-        clock_marks.each do |clock_mark|
+        clock_marks.each_with_index do |clock_mark, index|
           @groups.each do |key, group|
-            @current_position = {x: clock_mark.coordinates[:x2], y: clock_mark.vertical_middle_position}
-            move_to(group.x_distance_from_clock, 0)
-            group.marks_options.each do |mark|
-              add_mark file
-              move_to(25, 0)
+            if group.belongs_to_clock?(index + 1)            
+              @current_position = {x: clock_mark.coordinates[:x2], y: clock_mark.vertical_middle_position}
+              move_to(group.x_distance_from_clock, 0)
+              group.marks_options.each do |mark|
+                add_mark file
+                move_to(25, 0)
+              end
             end
           end
         end
