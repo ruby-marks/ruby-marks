@@ -17,7 +17,7 @@ Gem::Specification.new do |s|
   s.require_paths           = ["lib"]
   s.licenses                = ["MIT"]
   s.rubyforge_project       = "ruby_marks"
-  s.extra_rdoc_files        = ['README.rdoc'
+  s.extra_rdoc_files        = ['README.rdoc']
   
   # Dependencies
   s.add_dependency('rmagick')  
