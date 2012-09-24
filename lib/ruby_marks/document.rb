@@ -105,13 +105,12 @@ module RubyMarks
         position_before = @current_position
     
         scan_clock_marks unless clock_marks.any?
-        groups = [87, 310, 535, 760, 985]
-        marks = %w{A B C D E}
+
         clock_marks.each do |clock_mark|
-          groups.each do |group|
+          @groups.each do |key, group|
             @current_position = {x: clock_mark.coordinates[:x2], y: clock_mark.vertical_middle_position}
-            move_to(group, 0)
-            marks.each do |mark|
+            move_to(group.x_distance_from_clock, 0)
+            group.marks_options.each do |mark|
               add_mark file
               move_to(25, 0)
             end

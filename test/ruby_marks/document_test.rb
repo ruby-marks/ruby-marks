@@ -53,6 +53,17 @@ class RubyMarks::DocumentTest < Test::Unit::TestCase
     assert_equal %w{1 2 3}, @document.groups[:one].marks_options
   end
 
+  def test_should_get_the_configuration_defined_in_group
+    @document.configure do |config|
+      config.default_marks_options = %w{1 2 3}      
+      config.define_group :one do |group|
+        group.marks_options = %w{X Y Z}
+      end
+    end
+    assert_equal %w{X Y Z}, @document.groups[:one].marks_options
+  end
+
+
   def test_should_return_a_file_with_a_position_flagged
     @document.current_position = @positions[:first_clock_position]
     flagged_document = @document.flag_position
@@ -97,25 +108,25 @@ class RubyMarks::DocumentTest < Test::Unit::TestCase
   def test_should_scan_the_document_and_get_a_hash_of_marked_marks
     expected_hash = { 
       clock_1: {  
-        group_first: ['A'],
+        group_first:  ['A'],
         group_second: ['A']
       },
       clock_2: {  
-        group_first: ['B'],
+        group_first:  ['B'],
         group_second: ['B']
       },
       clock_3: {  
-        group_first: ['C'],
+        group_first:  ['C'],
         group_second: ['C'],
-        group_third: ['D']        
+        group_third:  ['D']        
       },
       clock_4: {  
-        group_first: ['D'],
+        group_first:  ['D'],
         group_second: ['D'],
-        group_third: ['D']
+        group_third:  ['D']
       },
       clock_5: {  
-        group_first: ['E'],
+        group_first:  ['E'],
         group_second: ['E']
       }
     }
