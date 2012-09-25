@@ -4,12 +4,13 @@ module RubyMarks
   class Group
 
     attr_reader :label, :document, :clocks_range
-    attr_accessor :marks_options, :x_distance_from_clock
+    attr_accessor :marks_options, :x_distance_from_clock, :distance_between_marks
 
     def initialize(label, document)
       @label = label
       @document = document
       @marks_options = @document.config.default_marks_options
+      @distance_between_marks = @document.config.default_distance_between_marks
       @x_distance_from_clock = 0
       @clocks_range = 0..0
       yield self if block_given?

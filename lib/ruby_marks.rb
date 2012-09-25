@@ -25,3 +25,5 @@ end
 @@recognition_colors = ["#000000"]
 
 @@default_marks_options = %w{A B C D E}
+
+@@default_distance_between_marks = 25

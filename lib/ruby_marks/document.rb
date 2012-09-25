@@ -79,7 +79,7 @@ module RubyMarks
               markeds = []
               group.marks_options.each do |mark|
                 markeds << mark if marked?
-                move_to(25, 0)
+                move_to(group.distance_between_marks, 0)
               end
               group_hash["group_#{key}".to_sym] = markeds if markeds.any?
             end
@@ -115,7 +115,7 @@ module RubyMarks
               move_to(group.x_distance_from_clock, 0)
               group.marks_options.each do |mark|
                 add_mark file
-                move_to(25, 0)
+                move_to(group.distance_between_marks, 0)
               end
             end
           end
