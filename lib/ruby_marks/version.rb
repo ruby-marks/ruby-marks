@@ -1,3 +1,3 @@
 module RubyMarks
-  VERSION = "0.0.2.dev".freeze
+  VERSION = "0.0.3.dev".freeze
 end
