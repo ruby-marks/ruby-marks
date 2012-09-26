@@ -1,4 +1,4 @@
-= Ruby Marks
+= Ruby Marks {<img src="https://secure.travis-ci.org/andrerpbts/ruby_marks.png" />}[http://travis-ci.org/andrerpbts/ruby_marks]
 
 A simple OMR ({Optical Mark Recognition}[http://en.wikipedia.org/wiki/Optical_mark_recognition]) gem.
 
