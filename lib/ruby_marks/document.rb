@@ -135,10 +135,10 @@ module RubyMarks
           clock = {}
           color = @file.pixel_color(x, y)
           color = RubyMarks::RGB.to_hex(color.red, color.green, color.blue)
-          if !in_clock && color == "#000000"
+          if !in_clock && @config.recognition_colors.include?(color)
             in_clock = true
             clock_marks << RubyMarks::ClockMark.new(document: self, position: {x: x, y: y+3})
-          elsif in_clock && color != "#000000"
+          elsif in_clock && !@config.recognition_colors.include?(color)
             in_clock = false
           end        
         end
