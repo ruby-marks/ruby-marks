@@ -14,6 +14,7 @@ module RubyMarks
       @clock_marks = []
       @groups = {} 
       self.create_config
+      @gc = Magick::Draw.new
     end
 
     def create_config
@@ -147,8 +148,7 @@ module RubyMarks
 
     private
     def add_mark(file)
-      flag = Magick::Draw.new
-      file.annotate(flag, 0, 0, current_position[:x] - 12, current_position[:y] + 15, "+") do
+      @gc.annotate(file, 0, 0, current_position[:x] - 12, current_position[:y] + 15, "+") do
         self.pointsize = 41
         self.stroke = '#000000'
         self.fill = '#C00000'
