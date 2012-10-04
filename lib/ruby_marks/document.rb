@@ -10,6 +10,7 @@ module RubyMarks
 
     def initialize(file)
       @file = Magick::Image.read(file).first
+      @file.threshold(0.55)
       @current_position = {x: 0, y: 0}
       @clock_marks = []
       @groups = {} 
@@ -108,6 +109,11 @@ module RubyMarks
         position_before = @current_position
     
         scan_clock_marks unless clock_marks.any?
+        clock_marks.each do |clock|
+          @gc.fill('red')
+          @gc.rectangle(clock.coordinates[:x1], clock.coordinates[:y1], clock.coordinates[:x2], clock.coordinates[:y2])
+          @gc.draw(file)
+        end
 
         clock_marks.each_with_index do |clock_mark, index|
           @groups.each do |key, group|
@@ -137,8 +143,11 @@ module RubyMarks
           color = @file.pixel_color(x, y)
           color = RubyMarks::RGB.to_hex(color.red, color.green, color.blue)
           if !in_clock && @config.recognition_colors.include?(color)
-            in_clock = true
-            clock_marks << RubyMarks::ClockMark.new(document: self, position: {x: x, y: y+3})
+            clock = RubyMarks::ClockMark.new(document: self, position: {x: x, y: y})
+            if clock.valid?
+              in_clock = true
+              clock_marks << clock
+            end
           elsif in_clock && !@config.recognition_colors.include?(color)
             in_clock = false
           end        

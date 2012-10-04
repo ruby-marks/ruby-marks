@@ -7,6 +7,7 @@ class RubyMarks::ClockMarkTest < Test::Unit::TestCase
     @document = RubyMarks::Document.new(@file)
     @positions = {}    
     @positions[:first_clock_position] = {x: 62, y: 794}
+    @positions[:not_a_clock] = {x: 62, y: 1032}
   end
 
   def test_should_get_clock_coordinates_by_a_given_position
@@ -33,6 +34,16 @@ class RubyMarks::ClockMarkTest < Test::Unit::TestCase
   def test_should_obtain_the_vertical_middle_position
     clock = RubyMarks::ClockMark.new(document: @document, position: @positions[:first_clock_position])
     assert_equal 796, clock.vertical_middle_position
+  end
+
+  def test_should_recognize_a_valid_clock
+    clock = RubyMarks::ClockMark.new(document: @document, position: @positions[:first_clock_position])
+    assert clock.valid?, "Not recognized a valid clock"
+  end
+
+  def test_should_recognize_a_invalid_clock
+    clock = RubyMarks::ClockMark.new(document: @document, position: @positions[:not_a_clock])
+    assert clock.invalid?, "Recognized a invalid clock as a valid one"
   end
 
 end

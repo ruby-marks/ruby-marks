@@ -25,7 +25,7 @@ module RubyMarks
             color = self.document.file.pixel_color(coordinates[:x1], y)
             color = RubyMarks::RGB.to_hex(color.red, color.green, color.blue)
 
-            break if color != "#000000" || coordinates[:x1] <= 0
+            break if !document.config.recognition_colors.include?(color) || coordinates[:x1] <= 0
           end
 
           coordinates[:x2] = x
@@ -34,7 +34,7 @@ module RubyMarks
             color = self.document.file.pixel_color(coordinates[:x2], y)
             color = RubyMarks::RGB.to_hex(color.red, color.green, color.blue)
 
-            break if color != "#000000" || coordinates[:x2] >= self.document.file.page.width
+            break if !document.config.recognition_colors.include?(color) || coordinates[:x2] >= self.document.file.page.width
           end 
 
           coordinates[:y1] = y
@@ -43,7 +43,7 @@ module RubyMarks
             color = self.document.file.pixel_color(x, coordinates[:y1])
             color = RubyMarks::RGB.to_hex(color.red, color.green, color.blue)
 
-            break if color != "#000000" || coordinates[:y1] <= 0
+            break if !document.config.recognition_colors.include?(color) || coordinates[:y1] <= 0
           end 
 
           coordinates[:y2] = y
@@ -52,10 +52,33 @@ module RubyMarks
             color = self.document.file.pixel_color(x, coordinates[:y2])
             color = RubyMarks::RGB.to_hex(color.red, color.green, color.blue)
 
-            break if color != "#000000" || coordinates[:y2] >= self.document.file.page.height
+            break if !document.config.recognition_colors.include?(color) || coordinates[:y2] >= self.document.file.page.height
           end 
         end
       end
+    end
+
+    def valid?
+      x_pos = coordinates[:x1]..coordinates[:x2]
+      y_pos = coordinates[:y1]..coordinates[:y2]
+
+      colors = []
+
+      y_pos.each do |y|
+        x_pos.each do |x|
+          color = self.document.file.pixel_color(x, y)
+          color = RubyMarks::RGB.to_hex(color.red, color.green, color.blue)
+          color = document.config.recognition_colors.include?(color) ? "." : " "
+          colors << color
+        end
+      end
+      intensity = colors.count(".") * 100 / colors.size
+
+      return intensity >= 70 ? true : false
+    end
+
+    def invalid?
+      !valid?
     end
 
     def width
