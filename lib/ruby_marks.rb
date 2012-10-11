@@ -28,6 +28,12 @@ module RubyMarks
 
   mattr_accessor :default_distance_between_marks
   @@default_distance_between_marks = 25
+
+  mattr_accessor :clock_width
+  @@clock_width = 26
+
+  mattr_accessor :clock_height
+  @@clock_height = 12
 end
 
 require 'ruby_marks/document'

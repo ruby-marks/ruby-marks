@@ -10,7 +10,7 @@ module RubyMarks
 
     def initialize(file)
       @file = Magick::Image.read(file).first
-      @file.threshold(0.55)
+      @file = @file.threshold(Magick::QuantumRange * 0.55)
       @current_position = {x: 0, y: 0}
       @clock_marks = []
       @groups = {} 
@@ -157,12 +157,18 @@ module RubyMarks
 
     private
     def add_mark(file)
-      @gc.annotate(file, 0, 0, current_position[:x] - 12, current_position[:y] + 15, "+") do
-        self.pointsize = 41
-        self.stroke = '#000000'
-        self.fill = '#C00000'
-        self.font_weight = Magick::BoldWeight
+      @gc.annotate(file, 0, 0, current_position[:x]-9, current_position[:y]+11, "+") do
+        self.pointsize = 30
+        self.fill = '#900000'
       end
+      
+      dr = Magick::Draw.new
+      dr.fill = '#FF0000'
+      dr.point(current_position[:x], current_position[:y])
+      dr.point(current_position[:x] + 1, current_position[:y])  
+      dr.point(current_position[:x], current_position[:y] + 1)   
+      dr.point(current_position[:x] + 1, current_position[:y] + 1)             
+      dr.draw(file)
     end
 
   end
