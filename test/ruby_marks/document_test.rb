@@ -12,7 +12,7 @@ class RubyMarks::DocumentTest < Test::Unit::TestCase
     @positions[:invalid_clock] = {x: 62, y: 1032}
     @document.configure do |config|
       config.define_group :first  do |group|
-        group.clocks_range = 1..21 
+        group.clocks_range = 1..20 
         group.x_distance_from_clock = 87
       end
 
