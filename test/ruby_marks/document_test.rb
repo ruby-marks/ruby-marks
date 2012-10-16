@@ -10,6 +10,7 @@ class RubyMarks::DocumentTest < Test::Unit::TestCase
     @positions[:unmarked_position] = {x: 161, y: 994}
     @positions[:first_clock_position] = {x: 62, y: 794}
     @positions[:invalid_clock] = {x: 62, y: 1032}
+
     @document.configure do |config|
       config.define_group :first  do |group|
         group.clocks_range = 1..20 
@@ -80,13 +81,23 @@ class RubyMarks::DocumentTest < Test::Unit::TestCase
   end
 
   def test_should_recognize_marked_position
-    @document.current_position = @positions[:marked_position]
-    assert @document.marked?, "The position wasn't recognized as marked"    
+    current_position = @positions[:marked_position]
+    area_x = 8
+    area_y = 8
+
+    x_pos = current_position[:x]-area_x..current_position[:x]+area_x
+    y_pos = current_position[:y]-area_y..current_position[:y]+area_y
+    assert @document.marked?(x_pos, y_pos), "The position wasn't recognized as marked"    
   end
 
   def test_should_recognize_not_marked_position
-    @document.current_position = @positions[:unmarked_position]
-    assert @document.unmarked?, "The position wasn't recognized as unmarked"    
+    current_position = @positions[:unmarked_position]
+    area_x = 8
+    area_y = 8
+
+    x_pos = current_position[:x]-area_x..current_position[:x]+area_x
+    y_pos = current_position[:y]-area_y..current_position[:y]+area_y    
+    assert @document.unmarked?(x_pos, y_pos), "The position wasn't recognized as unmarked"    
   end
 
   def test_should_recognize_the_document_clock_marks

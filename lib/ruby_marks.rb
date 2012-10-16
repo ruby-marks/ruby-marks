@@ -14,27 +14,38 @@ if magick_version =~ /Q16/
 end
 
 module RubyMarks
+  mattr_accessor :threshold_level
+  @@threshold_level = 55
+
+  mattr_accessor :clock_mark_size_tolerance
+  @@clock_mark_size_tolerance = 2
+
   mattr_accessor :clock_marks_scan_x
   @@clock_marks_scan_x = 62
 
-  mattr_accessor :intensity_percentual
-  @@intensity_percentual = 40
+  mattr_accessor :clock_width
+  @@clock_width = 26
 
   mattr_accessor :recognition_colors
   @@recognition_colors = ["#000000"]
+
+  mattr_accessor :clock_height
+  @@clock_height = 12
+
+  mattr_accessor :default_mark_width
+  @@default_mark_width = 16
+
+  mattr_accessor :default_mark_height
+  @@default_mark_height = 16
+
+  mattr_accessor :intensity_percentual
+  @@intensity_percentual = 40
 
   mattr_accessor :default_marks_options
   @@default_marks_options = %w{A B C D E}
 
   mattr_accessor :default_distance_between_marks
   @@default_distance_between_marks = 25
-
-  mattr_accessor :clock_width
-  @@clock_width = 26
-
-  mattr_accessor :clock_height
-  @@clock_height = 12
-
 
   COLORS = %w{ #d80000 #00d8d8 #d8006c #d86c00 #006cd8 #00d86c #d8d800 #00d86c #6c00d8 #a5a500
                #a27b18 #18a236 #df4f27 }

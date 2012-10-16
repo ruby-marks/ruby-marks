@@ -10,11 +10,11 @@ module RubyMarks
 
     def initialize(file)
       @file = Magick::Image.read(file).first
-      @file = @file.threshold(Magick::QuantumRange * 0.55)
       @current_position = {x: 0, y: 0}
       @clock_marks = []
       @groups = {} 
       self.create_config
+      @file = @file.threshold(@config.calculated_threshold_level)
       @gc = Magick::Draw.new
     end
 
@@ -39,31 +39,23 @@ module RubyMarks
       @current_position = {x: @current_position[:x] + x, y: @current_position[:y] + y}
     end
 
-    def marked?
-      if self.current_position
-        area_x = 8
-        area_y = 8
+    def marked?(x_pos, y_pos)
+      colors = []
 
-        x_pos = current_position[:x]-area_x..current_position[:x]+area_x
-        y_pos = current_position[:y]-area_y..current_position[:y]+area_y
-
-        colors = []
-
-        y_pos.each do |y|
-          x_pos.each do |x|
-            color = @file.pixel_color(x, y)
-            color = RubyMarks::ImageUtils.to_hex(color.red, color.green, color.blue)
-            color = @config.recognition_colors.include?(color) ? "." : " "
-            colors << color
-          end
+      y_pos.each do |y|
+        x_pos.each do |x|
+          color = @file.pixel_color(x, y)
+          color = RubyMarks::ImageUtils.to_hex(color.red, color.green, color.blue)
+          color = @config.recognition_colors.include?(color) ? "." : " "
+          colors << color
         end
-        intensity = colors.count(".") * 100 / colors.size
-        return intensity >= @config.intensity_percentual ? true : false
       end
+      intensity = colors.count(".") * 100 / colors.size
+      return intensity >= @config.intensity_percentual ? true : false
     end
 
-    def unmarked?
-      !marked?
+    def unmarked?(x_pos, y_pos)
+      !marked?(x_pos, y_pos)
     end
 
     def scan
@@ -80,7 +72,13 @@ module RubyMarks
               move_to(group.x_distance_from_clock, 0)
               markeds = []
               group.marks_options.each do |mark|
-                markeds << mark if marked?
+                area_x = group.mark_width  / 2
+                area_y = group.mark_height / 2
+
+                x_pos = current_position[:x]-area_x..current_position[:x]+area_x
+                y_pos = current_position[:y]-area_y..current_position[:y]+area_y
+
+                markeds << mark if marked?(x_pos, y_pos)
                 move_to(group.distance_between_marks, 0)
               end
               group_hash["group_#{key}".to_sym] = markeds if markeds.any?
