@@ -34,10 +34,14 @@ module RubyMarks
 
   mattr_accessor :clock_height
   @@clock_height = 12
+
+
+  COLORS = %w{ #d80000 #00d8d8 #d8006c #d86c00 #006cd8 #00d86c #d8d800 #00d86c #6c00d8 #a5a500
+               #a27b18 #18a236 #df4f27 }
 end
 
 require 'ruby_marks/document'
 require 'ruby_marks/config'
 require 'ruby_marks/clock_mark'
 require 'ruby_marks/group'
-require 'ruby_marks/rgb'
+require 'ruby_marks/image_utils'

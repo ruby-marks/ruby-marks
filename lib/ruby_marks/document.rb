@@ -52,7 +52,7 @@ module RubyMarks
         y_pos.each do |y|
           x_pos.each do |x|
             color = @file.pixel_color(x, y)
-            color = RubyMarks::RGB.to_hex(color.red, color.green, color.blue)
+            color = RubyMarks::ImageUtils.to_hex(color.red, color.green, color.blue)
             color = @config.recognition_colors.include?(color) ? "." : " "
             colors << color
           end
@@ -109,10 +109,11 @@ module RubyMarks
         position_before = @current_position
     
         scan_clock_marks unless clock_marks.any?
-        clock_marks.each do |clock|
-          @gc.fill('red')
-          @gc.rectangle(clock.coordinates[:x1], clock.coordinates[:y1], clock.coordinates[:x2], clock.coordinates[:y2])
-          @gc.draw(file)
+        clock_marks.each_with_index do |clock, index|
+          dr = Magick::Draw.new
+          dr.fill(RubyMarks::COLORS[5])
+          dr.rectangle(clock.coordinates[:x1], clock.coordinates[:y1], clock.coordinates[:x2], clock.coordinates[:y2])
+          dr.draw(file)
         end
 
         clock_marks.each_with_index do |clock_mark, index|
@@ -135,22 +136,82 @@ module RubyMarks
     def scan_clock_marks
       @clock_marks = []
       x = @config.clock_marks_scan_x
-      in_clock = false
       total_height = @file && @file.page.height || 0
-      @clock_marks.tap do |clock_marks| 
-        total_height.times do |y|
-          clock = {}
-          color = @file.pixel_color(x, y)
-          color = RubyMarks::RGB.to_hex(color.red, color.green, color.blue)
-          if !in_clock && @config.recognition_colors.include?(color)
-            clock = RubyMarks::ClockMark.new(document: self, position: {x: x, y: y})
-            if clock.valid?
-              in_clock = true
-              clock_marks << clock
+      @clock_marks.tap do |clock_marks|
+        current_y = 0
+        loop do 
+
+          break if current_y > total_height
+
+          color = @file.pixel_color(x, current_y)
+          color = RubyMarks::ImageUtils.to_hex(color.red, color.green, color.blue)
+          
+          if @config.recognition_colors.include?(color)
+            stack = flood_scan(x, current_y)
+
+            x_elements = []
+            y_elements = []
+            stack.each do |k,v|
+              stack[k].inject(x_elements, :<<)
+              y_elements << k
             end
-          elsif in_clock && !@config.recognition_colors.include?(color)
-            in_clock = false
-          end        
+
+            x_elements.sort!.uniq!
+            y_elements.sort!.uniq!
+            last_y = y_elements.last
+
+            loop do
+              stack_modified = false
+
+
+              x_elements.each do |col|
+                element_count = 0
+                y_elements.each do |row|
+                  element_count += 1 if stack[row].include?(col)
+                end
+
+                if element_count > 0 && element_count < self.config.height_with_down_tolerance
+                  current_width = RubyMarks::ImageUtils.calc_width(x_elements.first, x_elements.last)                
+                  middle = RubyMarks::ImageUtils.calc_middle_horizontal(x_elements.first, current_width)      
+
+                  x_elements.delete_if do |el|
+                    col <= middle && el <= col || col >= middle && el >= col
+                  end
+
+                  stack_modified = true
+                end
+              end
+
+              y_elements.each do |row|
+                if stack[row].count < self.config.width_with_down_tolerance
+                  current_height = RubyMarks::ImageUtils.calc_height(y_elements.first, y_elements.last)
+                  middle = RubyMarks::ImageUtils.calc_middle_vertical(y_elements.first, current_height)
+
+                  y_elements.delete_if do |ln|
+                    row <= middle  && ln <= row || row >= middle && ln >= row 
+                  end   
+
+                  stack_modified = true
+                end
+              end
+
+              break unless stack_modified
+            end
+
+            x1 = x_elements.first || 0
+            x2 = x_elements.last  || 0
+            y1 = y_elements.first || 0
+            y2 = y_elements.last  || 0 
+          end
+
+          clock = RubyMarks::ClockMark.new(document: self, coordinates: {x1: x1, x2: x2, y1: y1, y2: y2})
+
+          if clock.valid?
+            clock_marks << clock
+            current_y = last_y
+          end
+
+          current_y += 1
         end
       end
     end
@@ -168,7 +229,7 @@ module RubyMarks
             current_x = x
             loop do
               color = self.file.pixel_color(current_x, y)
-              color = RubyMarks::RGB.to_hex(color.red, color.green, color.blue)
+              color = RubyMarks::ImageUtils.to_hex(color.red, color.green, color.blue)
 
               break if !self.config.recognition_colors.include?(color) || current_x - 1 <= 0            
               process_queue[y] << current_x unless process_queue[y].include?(current_x) || result_mask[y].include?(current_x) 
@@ -179,7 +240,7 @@ module RubyMarks
             current_x = x
             loop do
               color = self.file.pixel_color(current_x, y)
-              color = RubyMarks::RGB.to_hex(color.red, color.green, color.blue)
+              color = RubyMarks::ImageUtils.to_hex(color.red, color.green, color.blue)
 
               break if !self.config.recognition_colors.include?(color) || current_x + 1 >= self.file.page.width            
               process_queue[y] << current_x unless process_queue[y].include?(current_x) || result_mask[y].include?(current_x)              
@@ -196,7 +257,7 @@ module RubyMarks
           process_queue[y].each do |element|
             if y - 1 >= 0
               color = self.file.pixel_color(element, y-1)
-              color = RubyMarks::RGB.to_hex(color.red, color.green, color.blue)     
+              color = RubyMarks::ImageUtils.to_hex(color.red, color.green, color.blue)     
               if self.config.recognition_colors.include?(color) && !result_mask[y-1].include?(element)
                 x = element
                 y = y - 1
@@ -211,7 +272,7 @@ module RubyMarks
           process_queue[y].each do |element|         
             if y + 1 <= self.file.page.height
               color = self.file.pixel_color(element, y+1)
-              color = RubyMarks::RGB.to_hex(color.red, color.green, color.blue)
+              color = RubyMarks::ImageUtils.to_hex(color.red, color.green, color.blue)
               if self.config.recognition_colors.include?(color) && !result_mask[y+1].include?(element)
                 x = element
                 y = y + 1
@@ -252,7 +313,8 @@ module RubyMarks
       dr.point(current_position[:x] + 1, current_position[:y] + 1)             
       dr.draw(file)
     end
-    
+
+ 
 
   end
 

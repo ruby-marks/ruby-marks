@@ -12,7 +12,7 @@ class RubyMarks::DocumentTest < Test::Unit::TestCase
     @positions[:invalid_clock] = {x: 62, y: 1032}
     @document.configure do |config|
       config.define_group :first  do |group|
-        group.clocks_range = 1..20 
+        group.clocks_range = 1..21 
         group.x_distance_from_clock = 87
       end
 
@@ -98,9 +98,9 @@ class RubyMarks::DocumentTest < Test::Unit::TestCase
     flagged_document = @document.flag_all_marks
     assert_equal Magick::Image, flagged_document.class
 
-    # temp_filename = "temp_sheet_demo2.png"
-    # File.delete(temp_filename) if File.exist?(temp_filename)
-    # flagged_document.write(temp_filename)    
+    temp_filename = "temp_sheet_demo2.png"
+    File.delete(temp_filename) if File.exist?(temp_filename)
+    flagged_document.write(temp_filename)    
   end
 
   def test_should_move_the_current_position_in_10_and_20_pixels

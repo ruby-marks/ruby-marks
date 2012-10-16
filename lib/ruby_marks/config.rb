@@ -16,6 +16,32 @@ module RubyMarks
       @default_distance_between_marks = RubyMarks.default_distance_between_marks
       @clock_width = RubyMarks.clock_width
       @clock_height = RubyMarks.clock_height
+
+      @tolerance = 2
+    end
+
+    def width_with_down_tolerance
+      @clock_width - @tolerance
+    end
+
+    def width_with_up_tolerance
+      @clock_width + @tolerance
+    end
+
+    def height_with_down_tolerance
+      @clock_height - @tolerance
+    end
+
+    def height_with_up_tolerance
+      @clock_height + @tolerance
+    end
+
+    def width_tolerance_range
+      width_with_down_tolerance..width_with_up_tolerance
+    end
+
+    def height_tolerance_range
+      height_with_down_tolerance..height_with_up_tolerance
     end
 
     def define_group(group_label, &block)
