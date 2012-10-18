@@ -15,7 +15,7 @@ end
 
 module RubyMarks
   mattr_accessor :threshold_level
-  @@threshold_level = 55
+  @@threshold_level = 70
 
   mattr_accessor :clock_mark_size_tolerance
   @@clock_mark_size_tolerance = 2
@@ -33,13 +33,13 @@ module RubyMarks
   @@clock_height = 12
 
   mattr_accessor :default_mark_width
-  @@default_mark_width = 16
+  @@default_mark_width = 20
 
   mattr_accessor :default_mark_height
-  @@default_mark_height = 16
+  @@default_mark_height = 20
 
   mattr_accessor :intensity_percentual
-  @@intensity_percentual = 40
+  @@intensity_percentual = 50
 
   mattr_accessor :default_marks_options
   @@default_marks_options = %w{A B C D E}

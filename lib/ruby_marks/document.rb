@@ -39,19 +39,91 @@ module RubyMarks
       @current_position = {x: @current_position[:x] + x, y: @current_position[:y] + y}
     end
 
-    def marked?(x_pos, y_pos)
-      colors = []
+    def marked?(expected_width, expected_height)
+      if self.current_position
 
-      y_pos.each do |y|
-        x_pos.each do |x|
-          color = @file.pixel_color(x, y)
-          color = RubyMarks::ImageUtils.to_hex(color.red, color.green, color.blue)
-          color = @config.recognition_colors.include?(color) ? "." : " "
-          colors << color
+        neighborhood_x = current_position[:x]-1..current_position[:x]+1
+        neighborhood_y = current_position[:y]-1..current_position[:y]+1
+
+        neighborhood_y.each do |current_y|
+          neighborhood_x.each do |current_x|
+
+            color = @file.pixel_color(current_x, current_y)
+            color = RubyMarks::ImageUtils.to_hex(color.red, color.green, color.blue)            
+
+            if @config.recognition_colors.include?(color)
+              stack = flood_scan(current_x, current_y)
+
+              x_elements = []
+              y_elements = []
+              stack.each do |k,v|
+                stack[k].inject(x_elements, :<<)
+                y_elements << k
+              end
+
+              x_elements.sort!.uniq!
+              y_elements.sort!.uniq!
+
+              x1 = x_elements.first || 0
+              x2 = x_elements.last  || 0
+              y1 = y_elements.first || 0
+              y2 = y_elements.last  || 0 
+
+              current_width  = RubyMarks::ImageUtils.calc_width(x1, x2)
+              current_height = RubyMarks::ImageUtils.calc_height(y1, y2)
+
+              if current_width >= expected_width + 2
+                distance_x1 = current_x - x1
+                distance_x2 = x2 - current_x
+
+                if distance_x1 <= distance_x2
+                  x2 = x1 + expected_width 
+                else
+                  x1 = x2 - expected_width 
+                end
+                current_width  = RubyMarks::ImageUtils.calc_width(x1, x2)
+              end
+
+
+              if current_height >= expected_height + 2
+                distance_y1 = current_y - y1
+                distance_y2 = y2 - current_y
+
+                if distance_y1 <= distance_y2
+                  y2 = y1 + expected_height 
+                else
+                  y1 = y2 - expected_height  
+                end
+                current_height = RubyMarks::ImageUtils.calc_height(y1, y2)                
+              end
+
+              if (current_width  >= expected_width  - 4 && current_width  <= expected_width  + 4) &&
+                 (current_height >= expected_height - 4 && current_height <= expected_height + 4) 
+
+                colors = []
+
+                x_pos = x1..x2
+                y_pos = y1..y2
+
+                y_pos.each do |y|
+                  x_pos.each do |x|
+                    color = @file.pixel_color(x, y)
+                    color = RubyMarks::ImageUtils.to_hex(color.red, color.green, color.blue)
+                    color = @config.recognition_colors.include?(color) ? "." : " "
+                    colors << color
+                  end
+                end
+
+                intensity = colors.count(".") * 100 / colors.size
+                return true if intensity >= @config.intensity_percentual
+              end
+            end
+         
+          end
         end
       end
-      intensity = colors.count(".") * 100 / colors.size
-      return intensity >= @config.intensity_percentual ? true : false
+
+      return false
     end
 
     def unmarked?(x_pos, y_pos)
@@ -72,13 +144,7 @@ module RubyMarks
               move_to(group.x_distance_from_clock, 0)
               markeds = []
               group.marks_options.each do |mark|
-                area_x = group.mark_width  / 2
-                area_y = group.mark_height / 2
-
-                x_pos = current_position[:x]-area_x..current_position[:x]+area_x
-                y_pos = current_position[:y]-area_y..current_position[:y]+area_y
-
-                markeds << mark if marked?(x_pos, y_pos)
+                markeds << mark if marked?(group.mark_width, group.mark_height)
                 move_to(group.distance_between_marks, 0)
               end
               group_hash["group_#{key}".to_sym] = markeds if markeds.any?
@@ -168,7 +234,7 @@ module RubyMarks
                   element_count += 1 if stack[row].include?(col)
                 end
 
-                if element_count > 0 && element_count < self.config.height_with_down_tolerance
+                if element_count > 0 && element_count < self.config.clock_height_with_down_tolerance
                   current_width = RubyMarks::ImageUtils.calc_width(x_elements.first, x_elements.last)                
                   middle = RubyMarks::ImageUtils.calc_middle_horizontal(x_elements.first, current_width)      
 
@@ -181,7 +247,7 @@ module RubyMarks
               end
 
               y_elements.each do |row|
-                if stack[row].count < self.config.width_with_down_tolerance
+                if stack[row].count < self.config.clock_width_with_down_tolerance
                   current_height = RubyMarks::ImageUtils.calc_height(y_elements.first, y_elements.last)
                   middle = RubyMarks::ImageUtils.calc_middle_vertical(y_elements.first, current_height)
 

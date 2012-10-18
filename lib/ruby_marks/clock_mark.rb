@@ -13,8 +13,8 @@ module RubyMarks
 
     def valid?
 
-      return false if !self.document.config.width_tolerance_range.include?(self.width)   ||
-                      !self.document.config.height_tolerance_range.include?(self.height)
+      return false if !self.document.config.clock_width_tolerance_range.include?(self.width)   ||
+                      !self.document.config.clock_height_tolerance_range.include?(self.height)
       
       x_pos = coordinates[:x1]..coordinates[:x2]
       y_pos = coordinates[:y1]..coordinates[:y2]

@@ -81,23 +81,13 @@ class RubyMarks::DocumentTest < Test::Unit::TestCase
   end
 
   def test_should_recognize_marked_position
-    current_position = @positions[:marked_position]
-    area_x = 8
-    area_y = 8
-
-    x_pos = current_position[:x]-area_x..current_position[:x]+area_x
-    y_pos = current_position[:y]-area_y..current_position[:y]+area_y
-    assert @document.marked?(x_pos, y_pos), "The position wasn't recognized as marked"    
+    @document.current_position = @positions[:marked_position]
+    assert @document.marked?(20, 20), "The position wasn't recognized as marked"    
   end
 
   def test_should_recognize_not_marked_position
-    current_position = @positions[:unmarked_position]
-    area_x = 8
-    area_y = 8
-
-    x_pos = current_position[:x]-area_x..current_position[:x]+area_x
-    y_pos = current_position[:y]-area_y..current_position[:y]+area_y    
-    assert @document.unmarked?(x_pos, y_pos), "The position wasn't recognized as unmarked"    
+    @document.current_position = @positions[:unmarked_position]
+    assert @document.unmarked?(20, 20), "The position wasn't recognized as unmarked"    
   end
 
   def test_should_recognize_the_document_clock_marks
@@ -133,13 +123,13 @@ class RubyMarks::DocumentTest < Test::Unit::TestCase
       },
       clock_3: {  
         group_first:  ['C'],
-        group_second: ['C'],
-        group_third:  ['D']        
+        group_second: ['C'], 
+        group_third:  ['D']            
       },
       clock_4: {  
         group_first:  ['D'],
         group_second: ['D'],
-        group_third:  ['D']
+        group_third:  ['D']       
       },
       clock_5: {  
         group_first:  ['E'],

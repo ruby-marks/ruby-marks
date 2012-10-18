@@ -30,28 +30,28 @@ module RubyMarks
       Magick::QuantumRange * (@threshold_level.to_f / 100)
     end
 
-    def width_with_down_tolerance
+    def clock_width_with_down_tolerance
       @clock_width - @clock_mark_size_tolerance
     end
 
-    def width_with_up_tolerance
+    def clock_width_with_up_tolerance
       @clock_width + @clock_mark_size_tolerance
     end
 
-    def height_with_down_tolerance
+    def clock_height_with_down_tolerance
       @clock_height - @clock_mark_size_tolerance
     end
 
-    def height_with_up_tolerance
+    def clock_height_with_up_tolerance
       @clock_height + @clock_mark_size_tolerance
     end
 
-    def width_tolerance_range
-      width_with_down_tolerance..width_with_up_tolerance
+    def clock_width_tolerance_range
+      clock_width_with_down_tolerance..clock_width_with_up_tolerance
     end
 
-    def height_tolerance_range
-      height_with_down_tolerance..height_with_up_tolerance
+    def clock_height_tolerance_range
+      clock_height_with_down_tolerance..clock_height_with_up_tolerance
     end
 
     def define_group(group_label, &block)
