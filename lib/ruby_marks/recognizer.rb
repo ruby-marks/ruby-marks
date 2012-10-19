@@ -308,9 +308,9 @@ module RubyMarks
           reset_process = false
 
           if process_line
-            current_x = x
+            current_x = x.to_i
             loop do
-              color = self.file.pixel_color(current_x.to_i, y.to_i)
+              color = self.file.pixel_color(current_x, y)
               color = RubyMarks::ImageUtils.to_hex(color.red, color.green, color.blue)
 
               break if !self.config.recognition_colors.include?(color) || current_x - 1 <= 0            
@@ -319,9 +319,9 @@ module RubyMarks
               current_x = current_x - 1
             end
 
-            current_x = x
+            current_x = x.to_i
             loop do
-              color = self.file.pixel_color(current_x.to_i, y.to_i)
+              color = self.file.pixel_color(current_x, y)
               color = RubyMarks::ImageUtils.to_hex(color.red, color.green, color.blue)
 
               break if !self.config.recognition_colors.include?(color) || current_x + 1 >= self.file.page.width            
