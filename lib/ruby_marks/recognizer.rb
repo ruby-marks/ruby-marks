@@ -1,21 +1,26 @@
 #encoding: utf-8
 module RubyMarks
   
-  # Represents a scanned document
-  class Document
-
-    attr_reader :file
+  class Recognizer
+    
+    attr_reader   :file
 
     attr_accessor :current_position, :clock_marks, :config, :groups
 
-    def initialize(file)
-      @file = Magick::Image.read(file).first
+    def initialize
       @current_position = {x: 0, y: 0}
       @clock_marks = []
-      @groups = {} 
+      @groups = {}       
       self.create_config
+    end
+
+    def file=(file)
+      @current_position = {x: 0, y: 0}
+      @clock_marks = []
+
+      @file = nil
+      @file = Magick::Image.read(file).first
       @file = @file.threshold(@config.calculated_threshold_level)
-      @gc = Magick::Draw.new
     end
 
     def create_config
@@ -23,7 +28,7 @@ module RubyMarks
     end
 
     def filename
-      @file.filename
+      @file && @file.filename
     end
 
     def configure(&block)
@@ -40,10 +45,12 @@ module RubyMarks
     end
 
     def marked?(expected_width, expected_height)
+      raise IOError, "There's a invalid or missing file" if @file.nil?
+      
       if self.current_position
 
-        neighborhood_x = current_position[:x]-1..current_position[:x]+1
-        neighborhood_y = current_position[:y]-1..current_position[:y]+1
+        neighborhood_x = current_position[:x]-2..current_position[:x]+2
+        neighborhood_y = current_position[:y]-2..current_position[:y]+2
 
         neighborhood_y.each do |current_y|
           neighborhood_x.each do |current_x|
@@ -131,6 +138,8 @@ module RubyMarks
     end
 
     def scan
+      raise IOError, "There's a invalid or missing file" if @file.nil?
+
       result = {}
       result.tap do |result|
         position_before = @current_position
@@ -157,6 +166,9 @@ module RubyMarks
     end
 
     def flag_position
+
+      raise IOError, "There's a invalid or missing file" if @file.nil?
+
       file = @file.dup
 
       file.tap do |file|
@@ -167,6 +179,9 @@ module RubyMarks
     end
 
     def flag_all_marks
+
+      raise IOError, "There's a invalid or missing file" if @file.nil?
+
       file = @file.dup
 
       file.tap do |file|
@@ -198,6 +213,9 @@ module RubyMarks
     end
 
     def scan_clock_marks
+
+      raise IOError, "There's a invalid or missing file" if @file.nil?
+
       @clock_marks = []
       x = @config.clock_marks_scan_x
       total_height = @file && @file.page.height || 0
@@ -268,7 +286,7 @@ module RubyMarks
             y2 = y_elements.last  || 0 
           end
 
-          clock = RubyMarks::ClockMark.new(document: self, coordinates: {x1: x1, x2: x2, y1: y1, y2: y2})
+          clock = RubyMarks::ClockMark.new(recognizer: self, coordinates: {x1: x1, x2: x2, y1: y1, y2: y2})
 
           if clock.valid?
             clock_marks << clock
@@ -364,7 +382,8 @@ module RubyMarks
 
     private
     def add_mark(file)
-      @gc.annotate(file, 0, 0, current_position[:x]-9, current_position[:y]+11, "+") do
+      dr = Magick::Draw.new
+      dr.annotate(file, 0, 0, current_position[:x]-9, current_position[:y]+11, "+") do
         self.pointsize = 30
         self.fill = '#900000'
       end

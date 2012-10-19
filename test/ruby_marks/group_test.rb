@@ -4,8 +4,9 @@ class RubyMarks::GroupTest < Test::Unit::TestCase
 
   def setup
     @file = 'assets/sheet_demo1.png'
-    @document = RubyMarks::Document.new(@file)    
-    @group = RubyMarks::Group.new(:test, @document)
+    @recognizer = RubyMarks::Recognizer.new
+    @recognizer.file = @file
+    @group = RubyMarks::Group.new(:test, @recognizer)
   end
 
   def test_should_convert_fixnum_into_range_in_clocks_range

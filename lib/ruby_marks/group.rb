@@ -2,18 +2,18 @@
 module RubyMarks
   
   class Group
-    attr_reader   :label, :document, :clocks_range
+    attr_reader   :label, :recognizer, :clocks_range
 
     attr_accessor :mark_width, :mark_height, :marks_options, :x_distance_from_clock, 
                   :distance_between_marks
 
-    def initialize(label, document)
+    def initialize(label, recognizer)
       @label = label
-      @document = document
-      @mark_width = @document.config.default_mark_width
-      @mark_height = @document.config.default_mark_height
-      @marks_options = @document.config.default_marks_options
-      @distance_between_marks = @document.config.default_distance_between_marks
+      @recognizer = recognizer
+      @mark_width = @recognizer.config.default_mark_width
+      @mark_height = @recognizer.config.default_mark_height
+      @marks_options = @recognizer.config.default_marks_options
+      @distance_between_marks = @recognizer.config.default_distance_between_marks
       @x_distance_from_clock = 0
       @clocks_range = 0..0
       yield self if block_given?

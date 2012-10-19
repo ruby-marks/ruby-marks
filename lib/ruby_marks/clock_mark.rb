@@ -3,7 +3,7 @@ module RubyMarks
   
   class ClockMark
 
-    attr_accessor :document, :coordinates
+    attr_accessor :recognizer, :coordinates
 
     def initialize(params={})
       params.each do |k, v|
@@ -13,8 +13,8 @@ module RubyMarks
 
     def valid?
 
-      return false if !self.document.config.clock_width_tolerance_range.include?(self.width)   ||
-                      !self.document.config.clock_height_tolerance_range.include?(self.height)
+      return false if !self.recognizer.config.clock_width_tolerance_range.include?(self.width)   ||
+                      !self.recognizer.config.clock_height_tolerance_range.include?(self.height)
       
       x_pos = coordinates[:x1]..coordinates[:x2]
       y_pos = coordinates[:y1]..coordinates[:y2]
@@ -23,9 +23,9 @@ module RubyMarks
 
       y_pos.each do |y|
         x_pos.each do |x|
-          color = self.document.file.pixel_color(x, y)
+          color = self.recognizer.file.pixel_color(x, y)
           color = RubyMarks::ImageUtils.to_hex(color.red, color.green, color.blue)
-          color = document.config.recognition_colors.include?(color) ? "." : " "
+          color = recognizer.config.recognition_colors.include?(color) ? "." : " "
           colors << color
         end
       end

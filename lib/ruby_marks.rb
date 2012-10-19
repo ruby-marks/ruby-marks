@@ -15,7 +15,7 @@ end
 
 module RubyMarks
   mattr_accessor :threshold_level
-  @@threshold_level = 70
+  @@threshold_level = 60
 
   mattr_accessor :clock_mark_size_tolerance
   @@clock_mark_size_tolerance = 2
@@ -51,7 +51,7 @@ module RubyMarks
                #a27b18 #18a236 #df4f27 }
 end
 
-require 'ruby_marks/document'
+require 'ruby_marks/recognizer'
 require 'ruby_marks/config'
 require 'ruby_marks/clock_mark'
 require 'ruby_marks/group'
