@@ -4,25 +4,19 @@ module RubyMarks
   class ImageUtils
 
     def self.calc_width(x1, x2)
-      x1 ||= 0
-      x2 ||= 0
-
-      x2 - x1 + 1
+      x2.to_i - x1.to_i + 1
     end
 
     def self.calc_height(y1, y2)
-      y1 ||= 0
-      y2 ||= 0
-
-      y2 - y1 + 1
+      y2.to_i - y1.to_i + 1
     end
 
     def self.calc_middle_horizontal(x, width)
-      x + width / 2
+      x.to_i + width.to_i / 2
     end
 
     def self.calc_middle_vertical(y, height)
-      y + height / 2
+      y.to_i + height.to_i / 2
     end   
     
 
