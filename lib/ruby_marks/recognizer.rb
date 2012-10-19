@@ -338,7 +338,7 @@ module RubyMarks
 
           process_queue[y].each do |element|
             if y - 1 >= 0
-              color = self.file.pixel_color(element, y-1)
+              color = self.file.pixel_color(element.to_i, y-1)
               color = RubyMarks::ImageUtils.to_hex(color.red, color.green, color.blue)     
               if self.config.recognition_colors.include?(color) && !result_mask[y-1].include?(element)
                 x = element
@@ -353,7 +353,7 @@ module RubyMarks
 
           process_queue[y].each do |element|         
             if y + 1 <= self.file.page.height
-              color = self.file.pixel_color(element, y+1)
+              color = self.file.pixel_color(element.to_i, y+1)
               color = RubyMarks::ImageUtils.to_hex(color.red, color.green, color.blue)
               if self.config.recognition_colors.include?(color) && !result_mask[y+1].include?(element)
                 x = element
