@@ -20,5 +20,18 @@ Gem::Specification.new do |s|
   s.extra_rdoc_files        = ['README.rdoc']
   
   # Dependencies
-  s.add_dependency('rmagick')  
+  s.add_dependency('rmagick') 
+
+  magick_version = `convert -version`
+
+  if magick_version =~ /Q16/ 
+    s.post_install_message = %{
+      *** IMPORTANT: You are running the ImageMagick under 16bits quantum depth. This configuration is used
+          in very specific cases and can cause RMagick work a bit slow. See more details in this forum post
+          http://rubyforge.org/forum/forum.php?thread_id=10975&forum_id=1618 ***
+    }
+  end
+
 end
+
+

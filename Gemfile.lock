@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    ruby_marks (0.0.6.dev)
+    ruby_marks (0.1.1)
       rmagick
 
 GEM
