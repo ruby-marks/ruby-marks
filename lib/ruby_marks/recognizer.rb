@@ -3,24 +3,28 @@ module RubyMarks
   
   class Recognizer
     
-    attr_reader   :file
+    attr_reader   :file, :raised_watchers, :groups, :watchers
 
-    attr_accessor :current_position, :clock_marks, :config, :groups
+    attr_accessor :current_position, :clock_marks, :config
 
     def initialize
-      @current_position = {x: 0, y: 0}
-      @clock_marks = []
-      @groups = {}       
+      self.reset_document
+      @groups = {}     
       self.create_config
     end
 
     def file=(file)
-      @current_position = {x: 0, y: 0}
-      @clock_marks = []
-
+      self.reset_document
       @file = nil
       @file = Magick::Image.read(file).first
       @file = @file.threshold(@config.calculated_threshold_level)
+    end
+
+    def reset_document
+      @current_position = {x: 0, y: 0}
+      @clock_marks = []
+      @raised_watchers = []
+      @watchers = {} 
     end
 
     def create_config
@@ -40,6 +44,19 @@ module RubyMarks
       @groups[group.label] = group if group
     end
 
+    def add_watcher(watcher_name, &block)
+      watcher = RubyMarks::Watcher.new(watcher_name, self, &block)
+      @watchers[watcher.name] = watcher if watcher
+    end
+
+    def raise_watcher(name, *args)
+      watcher = @watchers[name]
+      if watcher
+        @raised_watchers << watcher.name unless @raised_watchers.include?(watcher.name)
+        watcher.run(*args)
+      end
+    end
+
     def move_to(x, y)
       @current_position = {x: @current_position[:x] + x, y: @current_position[:y] + y}
     end
@@ -49,8 +66,8 @@ module RubyMarks
       
       if self.current_position
 
-        neighborhood_x = current_position[:x]-2..current_position[:x]+2
-        neighborhood_y = current_position[:y]-2..current_position[:y]+2
+        neighborhood_x = current_position[:x]-1..current_position[:x]+1
+        neighborhood_y = current_position[:y]-1..current_position[:y]+1
 
         neighborhood_y.each do |current_y|
           neighborhood_x.each do |current_x|
@@ -140,11 +157,15 @@ module RubyMarks
     def scan
       raise IOError, "There's a invalid or missing file" if @file.nil?
 
+      unmarked_group_found  = false
+      multiple_marked_found = false
+
       result = {}
       result.tap do |result|
         position_before = @current_position
         scan_clock_marks unless clock_marks.any?
-    
+
+        return false if self.config.expected_clocks_count > 0 && @clock_marks.count != self.config.expected_clocks_count
         clock_marks.each_with_index do |clock_mark, index|
           group_hash = {}
           @groups.each do |key, group|
@@ -156,12 +177,20 @@ module RubyMarks
                 markeds << mark if marked?(group.mark_width, group.mark_height)
                 move_to(group.distance_between_marks, 0)
               end
-              group_hash["group_#{key}".to_sym] = markeds if markeds.any?
+              if markeds.any?
+                group_hash["group_#{key}".to_sym] = markeds 
+                multiple_marked_found = true if markeds.size > 1
+              else
+                unmarked_group_found = true
+              end
             end
           end
           result["clock_#{index+1}".to_sym] = group_hash if group_hash.any?
         end
         @current_position = position_before
+        raise_watcher :scan_unmarked_watcher, result if unmarked_group_found
+        raise_watcher :scan_multiple_marked_watcher, result if multiple_marked_found    
+        raise_watcher :scan_mark_watcher, result, unmarked_group_found, multiple_marked_found if unmarked_group_found || multiple_marked_found    
       end
     end
 
@@ -188,6 +217,7 @@ module RubyMarks
         position_before = @current_position
     
         scan_clock_marks unless clock_marks.any?
+
         clock_marks.each_with_index do |clock, index|
           dr = Magick::Draw.new
           dr.fill(RubyMarks::COLORS[5])
@@ -295,6 +325,7 @@ module RubyMarks
 
           current_y += 1
         end
+        raise_watcher :clock_mark_difference_watcher if self.config.expected_clocks_count > 0 && @clock_marks.count != self.config.expected_clocks_count
       end
     end
 

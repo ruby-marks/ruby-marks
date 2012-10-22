@@ -12,6 +12,7 @@ class RubyMarks::RecognizerTest < Test::Unit::TestCase
     @positions[:invalid_clock] = {x: 62, y: 1032}
 
     @recognizer.configure do |config|
+      config.expected_clocks_count = 20
       config.define_group :first  do |group|
         group.clocks_range = 1..20 
         group.x_distance_from_clock = 87
@@ -142,5 +143,11 @@ class RubyMarks::RecognizerTest < Test::Unit::TestCase
     assert_equal expected_hash, @recognizer.scan 
   end
 
+  def test_should_make_scan_mark_watcher_raise_up
+    @recognizer.add_watcher :scan_mark_watcher 
+
+    @recognizer.scan
+    assert @recognizer.raised_watchers.include?(:scan_mark_watcher)
+  end
 end
  

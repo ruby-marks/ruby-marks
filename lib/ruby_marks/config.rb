@@ -3,7 +3,7 @@ module RubyMarks
 
   class Config
 
-    attr_accessor :clock_marks_scan_x, :intensity_percentual, :recognition_colors,
+    attr_accessor :clock_marks_scan_x, :expected_clocks_count, :intensity_percentual, :recognition_colors,
                   :default_marks_options, :default_distance_between_marks, 
                   :clock_width, :clock_height, :threshold_level, :clock_mark_size_tolerance,
                   :default_mark_width, :default_mark_height
@@ -15,6 +15,7 @@ module RubyMarks
       @intensity_percentual = RubyMarks.intensity_percentual
       @recognition_colors   = RubyMarks.recognition_colors
 
+      @expected_clocks_count = RubyMarks.expected_clocks_count
       @clock_marks_scan_x = RubyMarks.clock_marks_scan_x
       @clock_width  = RubyMarks.clock_width
       @clock_height = RubyMarks.clock_height
