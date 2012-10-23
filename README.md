@@ -62,7 +62,7 @@ a lot of your document sizes, positions, brightness, etc...
 
 That said, lets describe it's basic structure. The example will assume this base document:
 
-[![Document Example](https://github.com/andrerpbts/ruby_marks/blob/master/assets/sheet_demo2.png)](https://github.com/andrerpbts/ruby_marks/blob/master/assets/sheet_demo2.png)
+[![Document Example](https://raw.github.com/andrerpbts/ruby_marks/master/assets/sheet_demo2.png)](https://github.com/andrerpbts/ruby_marks/blob/master/assets/sheet_demo2.png)
 
 Then a basic code to scan it properly:
 
