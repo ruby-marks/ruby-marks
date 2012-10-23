@@ -23,7 +23,7 @@ module RubyMarks
     def reset_document
       @current_position = {x: 0, y: 0}
       @clock_marks = []
-      @raised_watchers = []
+      @raised_watchers = {}
       @watchers = {} 
     end
 
@@ -52,7 +52,8 @@ module RubyMarks
     def raise_watcher(name, *args)
       watcher = @watchers[name]
       if watcher
-        @raised_watchers << watcher.name unless @raised_watchers.include?(watcher.name)
+        @raised_watchers[watcher.name] ||= 0
+        @raised_watchers[watcher.name]  += 1 
         watcher.run(*args)
       end
     end
