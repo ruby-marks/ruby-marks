@@ -1,7 +1,7 @@
 Ruby Marks 
 ==========
 
-![Build Status](http://travis-ci.org/andrerpbts/ruby_marks)
+[![Build Status](https://secure.travis-ci.org/andrerpbts/ruby_marks.png?branch=master)](http://travis-ci.org/andrerpbts/ruby_marks)
 
 A simple OMR ([Optical Mark Recognition](http://en.wikipedia.org/wiki/Optical_mark_recognition)) gem for ruby 1.9.x.
 
