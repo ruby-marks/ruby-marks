@@ -6,15 +6,15 @@ A simple OMR ({Optical Mark Recognition}[http://en.wikipedia.org/wiki/Optical_ma
 == Requirements
 
 This gem uses ImageMagick[http://www.imagemagick.org] to manipulate the given images.
-You can verify if this utility is installed by the command line `which convert`, which should return 
+You can verify if this utility is installed by the command line +which convert+, which should return 
 the actually current ImageMagick path.
 
-For example, `/usr/local/bin/convert`.
+For example, +/usr/local/bin/convert+.
 
 
 == Install
 
-If you are using Bundler, just put this line in your Gemfile:
+If you are using +Bundler+, just put this line in your Gemfile:
   gem 'ruby_marks'
 
 Then run bundle install command:
