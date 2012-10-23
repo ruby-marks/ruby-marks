@@ -44,7 +44,7 @@ Then run bundle install command:
     
     bundle
 
-If not, you still run a default gem installation method:
+If not, you still can run a default gem installation method:
     
     gem install ruby_marks
 
@@ -60,8 +60,46 @@ Usage
 Unfortunatelly, this gem will require a bit more configuration to work, since the implementation depends 
 a lot of your document sizes, positions, brightness, etc...
 
-That said, lets describe the basic structure you may have on your code:
+That said, lets describe it's basic structure. The example will assume this base document:
 
+[![Document Example](https://github.com/andrerpbts/ruby_marks/blob/master/assets/sheet_demo1.png)](https://github.com/andrerpbts/ruby_marks/blob/master/assets/sheet_demo1.png)
+
+Then a basic code to scan it properly:
+
+```ruby
+recognizer = RubyMarks::Recognizer.new
+recognizer.configure do |config|
+
+  config.clock_marks_scan_x = 42
+  config.clock_width = 29
+  config.clock_height = 12
+
+  config.define_group :one do |group|
+    group.clocks_range = 1..5
+    group.x_distance_from_clock = 89
+  end
+
+  config.define_group :two do |group|
+    group.clocks_range = 1..5
+    group.x_distance_from_clock = 315
+  end
+
+  config.define_group :three do |group|
+    group.clocks_range = 1..5
+    group.x_distance_from_clock = 542
+  end
+
+  config.define_group :four do |group|
+    group.clocks_range = 1..5
+    group.x_distance_from_clock = 769
+  end
+
+  config.define_group :five do |group|
+    group.clocks_range = 1..5
+    group.x_distance_from_clock = 996
+  end
+end
+```
 
 Supported versions
 ------------------
