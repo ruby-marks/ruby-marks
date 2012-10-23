@@ -35,17 +35,21 @@ Install
 -------
 
 If you are using `Bundler`, just put this line in your Gemfile:
+
 ```ruby
 gem 'ruby_marks'
 ```
 
 Then run bundle install command:
+    
     % bundle
 
 If not, you still run a default gem installation method:
+    
     % gem install ruby_marks
 
 And require it in your ruby code:
+
 ```ruby
 require 'ruby_marks' 
 ```
