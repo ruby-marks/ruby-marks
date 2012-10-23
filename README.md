@@ -1,7 +1,7 @@
 Ruby Marks 
 ==========
 
-[![Build Status](http://travis-ci.org/andrerpbts/ruby_marks)]
+![Build Status](http://travis-ci.org/andrerpbts/ruby_marks)
 
 A simple OMR ([Optical Mark Recognition](http://en.wikipedia.org/wiki/Optical_mark_recognition)) gem for ruby 1.9.x.
 
@@ -42,11 +42,11 @@ gem 'ruby_marks'
 
 Then run bundle install command:
     
-    % bundle
+    bundle
 
 If not, you still run a default gem installation method:
     
-    % gem install ruby_marks
+    gem install ruby_marks
 
 And require it in your ruby code:
 
