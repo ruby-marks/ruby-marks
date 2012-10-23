@@ -11,28 +11,43 @@ Requirements
 
 This gem uses [ImageMagick](http://www.imagemagick.org) to manipulate the given images.
 You can verify if this utility is installed by the command line `which convert`, which should return 
-the actually current ImageMagick path.
+the current ImageMagick path.
 
 For example, `/usr/local/bin/convert`.
+
+If not installed:
+
+### MacOS X
+
+If you're on Mac OS X, Homebrew may be your best option:
+
+    brew install imagemagick
+
+
+### Ubuntu
+
+On Ubuntu, the `apt-get` should be enough:
+    
+    apt-get install imagemagick
 
 
 Install
 -------
 
-If you are using +Bundler+, just put this line in your Gemfile:
+If you are using `Bundler`, just put this line in your Gemfile:
 ```ruby
 gem 'ruby_marks'
 ```
 
 Then run bundle install command:
-      % bundle
+    % bundle
 
 If not, you still run a default gem installation method:
-      % gem install ruby_marks
+    % gem install ruby_marks
 
 And require it in your ruby code:
 ```ruby
-  require 'ruby_marks' 
+require 'ruby_marks' 
 ```
 
 Usage
