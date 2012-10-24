@@ -89,7 +89,7 @@ Then, we write a basic code to scan it and print result on console:
 recognizer = RubyMarks::Recognizer.new
 recognizer.configure do |config|
 
-  config.clock_marks_scan_x = 42
+  config.clock_marks_scan_x = 20
   config.clock_width = 29
   config.clock_height = 12
 
