@@ -167,6 +167,22 @@ This should puts each scan in a hash, like this:
 }
 ```
 
+There's a method you can call to will help you to configure the positions. This method return the image
+with the markups of encountered clock marks, where the marks is being recognized and where the clock_marks_scan_x
+config is making the column search.
+
+Example:
+
+```ruby
+  flagged_document = recognizer.flag_all_marks
+  flagged_document.write(temp_filename)
+```  
+
+Will return the image below with recognized clock marks in green, the clock_marks_scan_x line in blue and
+each mark position in a red cross:
+
+[![Flagged Document Example](https://raw.github.com/andrerpbts/ruby_marks/master/assets/sheet_demo2_flagged.png)](https://github.com/andrerpbts/ruby_marks/blob/master/assets/sheet_demo2_flagged.png)
+
 
 General Configuration Options
 -----------------------------
