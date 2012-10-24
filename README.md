@@ -200,8 +200,8 @@ config.clock_marks_scan_x = 62
 ### Clock sizes
 
 ```ruby
-# Defines the expected width and height of clock marks (in pixels). With the tolerance, if the first recognized clock exceeds
-# or stricts those values, it will be ignored...
+# Defines the expected width and height of clock marks (in pixels). With the tolerance, if the first 
+# recognized clock exceeds or stricts those values, it will be ignored...
 # The default values is 26 to width and 12 to height. Since the clock marks can be different, you SHOULD
 # calculate those sizes for your documents. 
 
@@ -233,8 +233,8 @@ config.expected_clocks_count = 0
 ### Default mark sizes
 
 ```ruby
-# Defines the expected width and height of the marks (in pixels). With the tolerance, if the first recognized mark exceeds
-# or stricts those values, it will be ignored.
+# Defines the expected width and height of the marks (in pixels). With the tolerance, if the first recognized 
+# mark exceeds or stricts those values, it will be ignored.
 # The default values is 20 to width and 20 to height. Since the marks can be different, you SHOULD
 # calculate those sizes for your documents. 
 
@@ -392,6 +392,8 @@ Contributing
 * Fork it
 * Make your implementations
 * Send me a pull request
+
+Thank you!
 
 
 License
