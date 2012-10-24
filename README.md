@@ -65,7 +65,7 @@ require 'ruby_marks'
 How it Works
 ============
 
-The gem will scan a document column search for this small full-filled black rectangles (**clock marks**). 
+The gem will scan a document column search for this small full-filled black rectangles ( **clock marks** ). 
 For each clock mark found, it will perform a line scan in each group looking for a marked position. 
 In the end, returns a hash with each correspondent mark found in the group and the clock.
 
@@ -125,7 +125,7 @@ Dir["./*.png"].each do |file|
 end
 ```
 
-This should puts each scan an hash, like this:
+This should puts each scan in a hash, like this:
 
 ```
 {
