@@ -216,7 +216,12 @@ module RubyMarks
 
       file.tap do |file|
         position_before = @current_position
-    
+        
+        dr = Magick::Draw.new
+        dr.fill(RubyMarks::COLORS[4])
+        dr.line(@config.clock_marks_scan_x, 0, @config.clock_marks_scan_x, file.page.height)
+        dr.draw(file)    
+
         scan_clock_marks unless clock_marks.any?
 
         clock_marks.each_with_index do |clock, index|
