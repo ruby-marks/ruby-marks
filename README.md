@@ -63,7 +63,7 @@ require 'ruby_marks'
 
 
 How it Works
-============
+------------
 
 The gem will scan a document column search for this small full-filled black rectangles **(clock marks)**. 
 For each clock mark found, it will perform a line scan in each group looking for a marked position. 
@@ -169,7 +169,7 @@ This should puts each scan in a hash, like this:
 
 
 General Configuration Options
-=============================
+-----------------------------
 
 As you may see, it's necessary configure some document aspects to make this work properly. So, lets describe
 each general configuration option available:
@@ -278,7 +278,7 @@ config.default_distance_between_marks = 25
 
 
 Group Configuration Options
-===========================
+---------------------------
 
 The General Configuration Options is more generic for the entire document. So, you can have some particularities
 when defining a group. So:
@@ -328,7 +328,7 @@ group.clocks_range = 1..5
 
 
 Watchers
-========
+--------
 
 Sometimes, due some image flaws, the scan can't recognize some clock mark, or a mark, or even recognize 
 more than one mark in a clock row in the same group when it is not expected. Then, you can place some 
