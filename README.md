@@ -65,7 +65,7 @@ require 'ruby_marks'
 How it Works
 ============
 
-The gem will scan a document column search for this small full-filled black rectangles ( **clock marks** ). 
+The gem will scan a document column search for this small full-filled black rectangles **(clock marks)**. 
 For each clock mark found, it will perform a line scan in each group looking for a marked position. 
 In the end, returns a hash with each correspondent mark found in the group and the clock.
 
