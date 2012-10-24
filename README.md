@@ -363,7 +363,7 @@ recognizer.add_watcher :scan_unmarked_watcher do |recognizer, result|
 end
 ```
 
-### Scan Multiple Makerd Watcher
+### Scan Multiple Marked Watcher
 
 ```ruby
 # Will execute your custom code if recognizes more than one mark in a clock row and the same group.
