@@ -254,7 +254,9 @@ module RubyMarks
 
       @clock_marks = []
       x = @config.clock_marks_scan_x
+      total_width = @file && @file.page.width || 0
       total_height = @file && @file.page.height || 0
+
       @clock_marks.tap do |clock_marks|
         current_y = 0
         loop do 
@@ -277,6 +279,11 @@ module RubyMarks
             x_elements.sort!.uniq!
             y_elements.sort!.uniq!
             last_y = y_elements.last
+            
+            if x_elements.size > 50
+              current_y = last_y + 1
+              next
+            end
 
             loop do
               stack_modified = false
@@ -349,8 +356,7 @@ module RubyMarks
             loop do
               color = self.file.pixel_color(current_x, y)
               color = RubyMarks::ImageUtils.to_hex(color.red, color.green, color.blue)
-
-              break if !self.config.recognition_colors.include?(color) || current_x - 1 <= 0            
+              break if !self.config.recognition_colors.include?(color) || current_x - 1 <= 0         
               process_queue[y] << current_x unless process_queue[y].include?(current_x) || result_mask[y].include?(current_x) 
               result_mask[y] << current_x unless result_mask[y].include?(current_x)            
               current_x = current_x - 1
