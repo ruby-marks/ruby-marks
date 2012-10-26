@@ -23,9 +23,9 @@ module RubyMarks
 
       y_pos.each do |y|
         x_pos.each do |x|
-          color = self.recognizer.file.pixel_color(x, y)
-          color = RubyMarks::ImageUtils.to_hex(color.red, color.green, color.blue)
-          color = recognizer.config.recognition_colors.include?(color) ? "." : " "
+
+          color = self.recognizer.file_str[y][x]
+
           colors << color
         end
       end

@@ -8,7 +8,7 @@ class RubyMarks::ClockMarkTest < Test::Unit::TestCase
     @recognizer.file = @file
     @positions = {}    
     @positions[:first_clock_position] = {x1: 49, x2: 74, y1: 790, y2: 801}
-    @positions[:not_a_clock] = {x1: 62, x2:63, y1: 859, y2: 860}
+    @positions[:not_a_clock] = {x1: 62, x2: 63, y1: 859, y2: 860}
   end
 
   def test_should_obtain_the_clock_mark_width

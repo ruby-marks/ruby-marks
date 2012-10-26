@@ -75,12 +75,12 @@ class RubyMarks::RecognizerTest < Test::Unit::TestCase
 
   def test_should_return_a_file_with_a_position_flagged
     @recognizer.current_position = @positions[:invalid_clock]
-    flagged_recognizer = @recognizer.flag_position
-    assert_equal Magick::Image, flagged_recognizer.class
+    flagged_document = @recognizer.flag_position
+    assert_equal Magick::Image, flagged_document.class
 
     # temp_filename = "temp_sheet_demo1.png"
     # File.delete(temp_filename) if File.exist?(temp_filename)
-    # flagged_recognizer.write(temp_filename)
+    # flagged_document.write(temp_filename)
   end
 
   def test_should_recognize_marked_position

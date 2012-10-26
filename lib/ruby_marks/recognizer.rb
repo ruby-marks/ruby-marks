@@ -3,7 +3,7 @@ module RubyMarks
   
   class Recognizer
     
-    attr_reader   :file, :raised_watchers, :groups, :watchers
+    attr_reader   :file, :raised_watchers, :groups, :watchers, :file_str
 
     attr_accessor :current_position, :clock_marks, :config
 
@@ -16,8 +16,10 @@ module RubyMarks
     def file=(file)
       self.reset_document
       @file = nil
+      @file_str = nil
       @file = Magick::Image.read(file).first
-      @file = @file.threshold(@config.calculated_threshold_level)
+      @file = @file.threshold(@config.calculated_threshold_level) 
+      self.export_file_to_str          
     end
 
     def reset_document
@@ -64,7 +66,6 @@ module RubyMarks
 
     def marked?(expected_width, expected_height)
       raise IOError, "There's a invalid or missing file" if @file.nil?
-      
       if self.current_position
 
         neighborhood_x = current_position[:x]-1..current_position[:x]+1
@@ -72,11 +73,10 @@ module RubyMarks
 
         neighborhood_y.each do |current_y|
           neighborhood_x.each do |current_x|
+            position = self.file_str[current_y][current_x]
+            
+            if position == "."
 
-            color = @file.pixel_color(current_x, current_y)
-            color = RubyMarks::ImageUtils.to_hex(color.red, color.green, color.blue)            
-
-            if @config.recognition_colors.include?(color)
               stack = flood_scan(current_x, current_y)
 
               x_elements = []
@@ -125,6 +125,7 @@ module RubyMarks
               if (current_width  >= expected_width  - 4 && current_width  <= expected_width  + 4) &&
                  (current_height >= expected_height - 4 && current_height <= expected_height + 4) 
 
+
                 colors = []
 
                 x_pos = x1..x2
@@ -132,9 +133,7 @@ module RubyMarks
 
                 y_pos.each do |y|
                   x_pos.each do |x|
-                    color = @file.pixel_color(x, y)
-                    color = RubyMarks::ImageUtils.to_hex(color.red, color.green, color.blue)
-                    color = @config.recognition_colors.include?(color) ? "." : " "
+                    color = self.file_str[y][x]
                     colors << color
                   end
                 end
@@ -157,7 +156,6 @@ module RubyMarks
 
     def scan
       raise IOError, "There's a invalid or missing file" if @file.nil?
-
       unmarked_group_found  = false
       multiple_marked_found = false
 
@@ -211,7 +209,7 @@ module RubyMarks
     def flag_all_marks
 
       raise IOError, "There's a invalid or missing file" if @file.nil?
-
+      
       file = @file.dup
 
       file.tap do |file|
@@ -261,12 +259,11 @@ module RubyMarks
         current_y = 0
         loop do 
 
-          break if current_y > total_height
+          break if current_y >= total_height
 
-          color = @file.pixel_color(x, current_y)
-          color = RubyMarks::ImageUtils.to_hex(color.red, color.green, color.blue)
+          position = @file_str[current_y][x]
           
-          if @config.recognition_colors.include?(color)
+          if position == "."
             stack = flood_scan(x, current_y)
 
             x_elements = []
@@ -354,9 +351,10 @@ module RubyMarks
           if process_line
             current_x = x.to_i
             loop do
-              color = self.file.pixel_color(current_x, y)
-              color = RubyMarks::ImageUtils.to_hex(color.red, color.green, color.blue)
-              break if !self.config.recognition_colors.include?(color) || current_x - 1 <= 0         
+
+              position = self.file_str[y][current_x]
+              
+              break if position != "." || current_x - 1 <= 0         
               process_queue[y] << current_x unless process_queue[y].include?(current_x) || result_mask[y].include?(current_x) 
               result_mask[y] << current_x unless result_mask[y].include?(current_x)            
               current_x = current_x - 1
@@ -364,10 +362,9 @@ module RubyMarks
 
             current_x = x.to_i
             loop do
-              color = self.file.pixel_color(current_x, y)
-              color = RubyMarks::ImageUtils.to_hex(color.red, color.green, color.blue)
+              position = self.file_str[y][current_x]
 
-              break if !self.config.recognition_colors.include?(color) || current_x + 1 >= self.file.page.width            
+              break if position != "." || current_x + 1 >= self.file.page.width            
               process_queue[y] << current_x unless process_queue[y].include?(current_x) || result_mask[y].include?(current_x)              
               result_mask[y] << current_x unless result_mask[y].include?(current_x)
               current_x = current_x + 1
@@ -377,13 +374,19 @@ module RubyMarks
             process_queue[y] = process_queue[y].sort
           end
 
+          if process_queue[y].size > 50
+            process_queue =  Hash.new { |hash, key| hash[key] = [] }
+            y = y + 1
+            next
+          end
+
           process_line = true
 
           process_queue[y].each do |element|
             if y - 1 >= 0
-              color = self.file.pixel_color(element.to_i, y-1)
-              color = RubyMarks::ImageUtils.to_hex(color.red, color.green, color.blue)     
-              if self.config.recognition_colors.include?(color) && !result_mask[y-1].include?(element)
+              position = self.file_str[y-1][element]
+  
+              if position == "." && !result_mask[y-1].include?(element)
                 x = element
                 y = y - 1
                 reset_process = true
@@ -396,9 +399,9 @@ module RubyMarks
 
           process_queue[y].each do |element|         
             if y + 1 <= self.file.page.height
-              color = self.file.pixel_color(element.to_i, y+1)
-              color = RubyMarks::ImageUtils.to_hex(color.red, color.green, color.blue)
-              if self.config.recognition_colors.include?(color) && !result_mask[y+1].include?(element)
+              position = self.file_str[y+1][element]
+
+              if position == "." && !result_mask[y+1].include?(element)
                 x = element
                 y = y + 1
                 reset_process = true
@@ -423,6 +426,14 @@ module RubyMarks
       end
     end
 
+    def export_file_to_str
+      @file_str = @file.export_pixels_to_str
+      @file_str = @file_str.gsub!(Regexp.new('\xFF\xFF\xFF', nil, 'n'), " ,")
+      @file_str = @file_str.gsub!(Regexp.new('\x00\x00\x00', nil, 'n'), ".,")
+      @file_str = @file_str.split(',')
+      @file_str = @file_str.each_slice(@file.page.width).to_a   
+    end
+
     private
     def add_mark(file)
       dr = Magick::Draw.new
@@ -439,8 +450,6 @@ module RubyMarks
       dr.point(current_position[:x] + 1, current_position[:y] + 1)             
       dr.draw(file)
     end
-
- 
 
   end
 
