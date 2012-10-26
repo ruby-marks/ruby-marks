@@ -15,7 +15,10 @@ module RubyMarks
 
       return false if !self.recognizer.config.clock_width_tolerance_range.include?(self.width)   ||
                       !self.recognizer.config.clock_height_tolerance_range.include?(self.height)
-      
+
+
+      self.recognizer.export_file_to_str if self.recognizer.file_str.nil?  
+
       x_pos = coordinates[:x1]..coordinates[:x2]
       y_pos = coordinates[:y1]..coordinates[:y2]
 

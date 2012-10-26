@@ -18,8 +18,7 @@ module RubyMarks
       @file = nil
       @file_str = nil
       @file = Magick::Image.read(file).first
-      @file = @file.threshold(@config.calculated_threshold_level) 
-      self.export_file_to_str          
+      @file = @file.threshold(@config.calculated_threshold_level)       
     end
 
     def reset_document
@@ -66,6 +65,9 @@ module RubyMarks
 
     def marked?(expected_width, expected_height)
       raise IOError, "There's a invalid or missing file" if @file.nil?
+
+      self.export_file_to_str if self.file_str.nil?  
+      
       if self.current_position
 
         neighborhood_x = current_position[:x]-1..current_position[:x]+1
@@ -156,6 +158,9 @@ module RubyMarks
 
     def scan
       raise IOError, "There's a invalid or missing file" if @file.nil?
+
+      self.export_file_to_str if self.file_str.nil?  
+
       unmarked_group_found  = false
       multiple_marked_found = false
 
@@ -210,6 +215,8 @@ module RubyMarks
 
       raise IOError, "There's a invalid or missing file" if @file.nil?
       
+      self.export_file_to_str if self.file_str.nil?  
+
       file = @file.dup
 
       file.tap do |file|
@@ -249,6 +256,8 @@ module RubyMarks
     def scan_clock_marks
 
       raise IOError, "There's a invalid or missing file" if @file.nil?
+
+      self.export_file_to_str if self.file_str.nil?  
 
       @clock_marks = []
       x = @config.clock_marks_scan_x
