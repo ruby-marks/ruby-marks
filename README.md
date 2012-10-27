@@ -348,11 +348,12 @@ Watchers
 
 Sometimes, due some image flaws, the scan can't recognize some clock mark, or a mark, or even recognize 
 more than one mark in a clock row in the same group when it is not expected. Then, you can place some 
-watchers, that will perform some custom code made by yourself in those cases. The available watchers are:
+watchers, that will perform some custom code made by yourself in those cases. 
 In the watchers you can, for example, apply a deskew in image and re-run the scan. But, be advised, if you 
 call the scan method again inside the watcher, you should make sure that you have a way to leave the watcher
 to avoid a endless loop. You always can check how many times the watcher got raised by checking in 
 `recognizer.raised_watchers[:watcher_name]` hash.
+The available watchers are:
 
 
 ### Scan Mark Watcher
