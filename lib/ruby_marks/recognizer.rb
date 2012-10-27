@@ -349,18 +349,20 @@ module RubyMarks
     end
 
     def flood_scan(x, y)
+
       result_mask =  Hash.new { |hash, key| hash[key] = [] }
       result_mask.tap do |result_mask|
         process_queue =  Hash.new { |hash, key| hash[key] = [] }
         process_line = true
         
         loop do
+
+          break if y > self.file_str.size - 1
           reset_process = false
 
           if process_line
             current_x = x.to_i
             loop do
-
               position = self.file_str[y][current_x]
               
               break if position != "." || current_x - 1 <= 0         
