@@ -2,33 +2,63 @@
 module RubyMarks
   
   class Group
-    attr_reader   :label, :recognizer, :clocks_range
+    attr_reader   :label, :recognizer
+    attr_accessor :mark_width, :mark_height, :marks_options, :coordinates, :expected_coordinates,
+                  :mark_width_tolerance, :mark_height_tolerance, :marks, :distance_between_marks
 
-    attr_accessor :mark_width, :mark_height, :marks_options, :x_distance_from_clock, 
-                  :distance_between_marks
 
     def initialize(label, recognizer)
       @label = label
       @recognizer = recognizer
-      @mark_width = @recognizer.config.default_mark_width
+      
+      @mark_width  = @recognizer.config.default_mark_width
       @mark_height = @recognizer.config.default_mark_height
+
+      @mark_width_tolerance  = @recognizer.config.default_mark_width_tolerance
+      @mark_height_tolerance = @recognizer.config.default_mark_height_tolerance
+
       @marks_options = @recognizer.config.default_marks_options
       @distance_between_marks = @recognizer.config.default_distance_between_marks
-      @x_distance_from_clock = 0
-      @clocks_range = 0..0
+
+      @expected_lines = @recognizer.config.default_expected_lines
+      @expected_coordinates = {}
       yield self if block_given?
     end
 
-    def clocks_range=(value)   
-      value = value..value if value.is_a?(Fixnum)
-      @clocks_range = value if value.is_a?(Range)
+
+    def incorrect_expected_lines
+      @expected_lines != marks.count
     end
 
-    def belongs_to_clock?(clock)
-      if @clocks_range.is_a?(Range)
-        return @clocks_range.include? clock
-      end
+    def mark_width_with_down_tolerance
+      @mark_width - @mark_width_tolerance
     end
+
+
+    def mark_width_with_up_tolerance
+      @mark_width + @mark_width_tolerance
+    end
+
+
+    def mark_height_with_down_tolerance
+      @mark_height - @mark_height_tolerance
+    end
+
+
+    def mark_height_with_up_tolerance
+      @mark_height + @mark_height_tolerance
+    end
+
+
+    def mark_width_tolerance_range
+      mark_width_with_down_tolerance..mark_width_with_up_tolerance
+    end
+
+
+    def mark_height_tolerance_range
+      mark_height_with_down_tolerance..mark_height_with_up_tolerance
+    end
+
   end
 
 end

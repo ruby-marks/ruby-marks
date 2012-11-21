@@ -65,13 +65,20 @@ require 'ruby_marks'
 How it Works
 ------------
 
-The gem will perform a scan in a specified pixel column in the given document, searching for those small black filled rectangles **(clock marks)**. 
-For each clock mark found, it will perform a line scan in each group looking for a marked position. 
-In the end, returns a hash with each correspondent mark found in the group and the clock.
+Using a template document, you should especify the expected area where each group is. By applying an edge detect algorithm
+it will discover where the groups are, and will check if they are near the expected position. 
+After the groups being found, the gem will perform a scan in each group in order to recognize their marks. 
+In the end, returns a hash with each correspondent mark found in the group.
 
-The gem will not perform deskew in your documents. If the document have skew, then you should apply your own
+The gem will not perform deskew in your documents. If the document have a huge skew, then you should apply your own
 deskew method on the file before.
 
+```
+NOTE:
+We changed the way it recognizes the marks. It's not based on clocks anymore. If you are updating the gem 
+from 0.1.4 version, you should refactor your code to eliminate the clocks parameters and adjust 
+some new configurations.
+```
 
 Usage
 -----
@@ -83,99 +90,76 @@ That said, lets describe it's basic structure. The example will assume a directo
 
 [![Document Example](https://raw.github.com/andrerpbts/ruby_marks/master/assets/sheet_demo2.png)](https://github.com/andrerpbts/ruby_marks/blob/master/assets/sheet_demo2.png)
 
-Then, we write a basic code to scan it and print result on console:
+
+First, we will need to get the pixels coordinates, using one document as template, of the areas 
+where the expected groups are. This image can explain where to pick each position:
+
+[![Document Example](https://raw.github.com/andrerpbts/ruby_marks/master/assets/sheet_demo2_group_coords.png)](https://github.com/andrerpbts/ruby_marks/blob/master/assets/sheet_demo2_group_coords.png)
+
+
+The threshold level should be adjusted too, in order to don't get a too bright or too polluted marks. See:
+
+[![Document Example](https://raw.github.com/andrerpbts/ruby_marks/master/assets/threshold_examples.png)](https://github.com/andrerpbts/ruby_marks/blob/master/assets/threshold_examples.png)
+
+
+Then, we write a basic code to scan it and print result on console (each option available are described bellow):
 
 ```ruby
+# Instantiate the Recognizer 
 recognizer = RubyMarks::Recognizer.new
+
+# Configuring the document aspects
 recognizer.configure do |config|
+  config.threshold_level = 90
+  config.default_expected_lines = 5
 
-  config.clock_marks_scan_x = 20
-  config.clock_width = 29
-  config.clock_height = 12
-
-  config.define_group :one do |group|
-    group.clocks_range = 1..5
-    group.x_distance_from_clock = 89
+  config.define_group :first  do |group|
+    group.expected_coordinates = {x1: 34, y1: 6, x2: 160, y2: 134}
   end
 
-  config.define_group :two do |group|
-    group.clocks_range = 1..5
-    group.x_distance_from_clock = 315
+  config.define_group :second do |group| 
+    group.expected_coordinates = {x1: 258, y1: 6, x2: 388, y2: 134}
   end
 
-  config.define_group :three do |group|
-    group.clocks_range = 1..5
-    group.x_distance_from_clock = 542
+  config.define_group :third  do |group| 
+    group.expected_coordinates = {x1: 486, y1: 6, x2: 614, y2: 134}
   end
 
-  config.define_group :four do |group|
-    group.clocks_range = 1..5
-    group.x_distance_from_clock = 769
+  config.define_group :fourth do |group| 
+    group.expected_coordinates = {x1: 714, y1: 6, x2: 844, y2: 134}
   end
 
-  config.define_group :five do |group|
-    group.clocks_range = 1..5
-    group.x_distance_from_clock = 996
+  config.define_group :fifth  do |group| 
+    group.expected_coordinates = {x1: 942, y1: 6, x2: 1068, y2: 134}
   end
 end
-
-Dir["./*.png"].each do |file|
-  recognizer.file = file
-  puts recognizer.scan
-end
 ```
 
-This should puts each scan in a hash, like this:
 
-```
-{
-  :clock_1 => {
-    :group_one   => ['A'],
-    :group_two   => ['E'],
-    :group_three => ['B'],
-    :group_four  => ['B'],
-    :group_five  => ['B']
-  },
-  :clock_2 => {
-    :group_one   => ['C'],
-    :group_two   => ['A'],
-    :group_three => ['B'],
-    :group_four  => ['E'],
-    :group_five  => ['A']
-  },
-  :clock_3 => {
-    :group_one   => ['B'],
-    :group_two   => ['B'],
-    :group_three => ['D'],
-    :group_four  => ['A'],
-    :group_five  => ['A']
-  },
-  :clock_4 => {
-    :group_one   => ['B'],
-    :group_two   => ['A'],
-    :group_three => ['B'],
-    :group_four  => ['C'],
-    :group_five  => ['C']
-  },
-  :clock_5 => {
-    :group_one   => ['D'],
-    :group_two   => ['B'],
-    :group_three => ['B'],
-    :group_four  => ['D'],
-    :group_five  => ['D']
-  }
-}
+Then we need to adjust the edge level to make sure the groups are being highlighted enough to being recognized. 
+You can see the image after the edge algorithm is applied if you write the file after submit it to Recognizer. Like this:
+
+```ruby
+recognizer.file = 'example.png'
+file = @recognizer.file
+filename = "temp_image.png"
+file.write(filename)
 ```
 
-There's a method you can call to will help you to configure the positions. This method return the image
-with the markups of encountered clock marks, where the marks is being recognized and where the clock_marks_scan_x
-config is making the column search.
+The result image should be like this one (note that all the groups are separated from the rest of the document these white blocks):
+
+[![Document Example](https://raw.github.com/andrerpbts/ruby_marks/master/assets/sheet_demo2_edge.png)](https://github.com/andrerpbts/ruby_marks/blob/master/assets/sheet_demo2_edge.png)
+
+
+There's a method you can call to will help you to identify how the document is being recognized. This method return the image
+with the showing where is the expected groups coordinates are, where are the actual groups coordinates, and where the marks 
+is being recognized in each group.
 
 Example:
 
 ```ruby
-  flagged_document = recognizer.flag_all_marks
-  flagged_document.write(temp_filename)
+flagged_document = recognizer.flag_all_marks
+flagged_document.write(temp_filename)
 ```  
 
 Will return the image below with recognized clock marks in green, the clock_marks_scan_x line in blue and
@@ -184,78 +168,115 @@ each mark position in a red cross:
 [![Flagged Document Example](https://raw.github.com/andrerpbts/ruby_marks/master/assets/sheet_demo2_flagged.png)](https://github.com/andrerpbts/ruby_marks/blob/master/assets/sheet_demo2_flagged.png)
 
 
+With all this configured, we can submit our images to a scan:
+
+```ruby
+# Read all documents in directory thats in a png format
+Dir["./*.png"].each do |file|
+  recognizer.file = file
+  puts recognizer.scan
+end
+```
+
+And, this should puts each scan in a hash, like this:
+
+```
+{
+  first: { 
+    1 => ['A'],
+    2 => ['C'],
+    3 => ['B'],
+    4 => ['B'],
+    5 => ['D']
+  },
+  second: {
+    1 => ['E'],
+    2 => ['A'],
+    3 => ['B'],
+    4 => ['A'],
+    5 => ['B']
+  },
+  three: {
+    1 => ['B'],    
+    2 => ['B'],
+    3 => ['D'], 
+    4 => ['B'],    
+    5 => ['B']
+  },
+  four: {
+    1 => ['B'],
+    2 => ['E'],    
+    3 => ['A'],    
+    4 => ['C'],    
+    5 => ['D']
+  },
+  five: {
+    1 => ['B'],
+    2 => ['A'],
+    3 => ['A'],
+    4 => ['C'],
+    5 => ['D']
+  }
+}
+```
+
+
+
 General Configuration Options
 -----------------------------
 
 As you may see, it's necessary configure some document aspects to make this work properly. So, lets describe
 each general configuration option available:
 
+### Edge level
+
+```ruby
+# The size of the edge to apply in the edge detect algorithm. 
+# The default value is 4, but is very important you verify the algorithm result and adjust it to work.
+config.edge_level = 4
+```
+
 ### Threshold level 
 
 ```ruby
 # Applies the given percentual in the image in order to get it back with only black and white pixels. 
 # Low percentuals will result in a bright image, as High percentuals will result in a more darken image.
-# The default value is 60
+# The default value is 60, but is very important you verify the algorithm result and adjust it to work.
 
 config.threshold_level = 60  
 ```
 
-### Distance in axis X from margin to scan the clock marks
+### Expected lines
 
 ```ruby
-# Defines the X distance from the left margin (in pixels) to look for the valids (black) pixels
-# of the clock marks in this column. This configuration is very important because each type of document may
-# have the clock marks in a specific and different column, and this configuration that will indicate 
-# a X pixel column that cross all the clocks.
-# The default value is 62 but only for tests purposes. You SHOULD calculate this value and set
-# a new one.
+# The scan will raise the incorrect group watcher if one or more group don't have the expected number of lines
+# Here, this configuration becomes valid to all groups.
+# The default value is 20, but is very 
 
-config.clock_marks_scan_x = 62
-```
-
-### Clock sizes
-
-```ruby
-# Defines the expected width and height of clock marks (in pixels). With the tolerance, if the first 
-# recognized clock exceeds or stricts those values, it will be ignored...
-# The default values is 26 to width and 12 to height. Since the clock marks can be different, you SHOULD
-# calculate those sizes for your documents. 
-
-config.clock_width = 26
-config.clock_height = 12
-```
-
-### Tolerance on the size of clock mark
-
-```ruby
-# Indicates the actual tolerance (in pixels) for the clock mark found. That means the clock can be smaller or 
-# larger than expected, by the number of pixels set in this option.
-# The default value is 2
-
-config.clock_mark_size_tolerance = 2
-```
-
-### Expected clocks count
-
-```ruby
-# If this value is defined (above 0), the scan will perform a check if the clocks found on document
-# is identical with this expected number. If different, the scan will be stopped.
-# This config is mandatory if you want to raise the Clock Mark Difference Watcher.
-# The default value is 0
-
-config.expected_clocks_count = 0
+config.default_expected_lines = 20
 ```
 
 ### Default mark sizes
 
 ```ruby
-# Defines the expected width and height of the marks (in pixels). With the tolerance, if the first recognized 
+# Defines the expected width and height of the marks (in pixels). With the tolerance, if the recognized 
 # mark exceeds or stricts those values, it will be ignored.
 # The default values is 20 to width and 20 to height. Since the marks can be different, you SHOULD
 # calculate those sizes for your documents. 
 
 config.default_mark_width = 20
 config.default_mark_height = 20
+```
+
+### Default mark sizes tolerances
+
+```ruby
+# Defines the tolerance in width and height of the marks (in pixels). With the the mark size, if the recognized 
+# mark exceeds or stricts those values, it will be ignored.
+# The default values is 4 for both width and height. 
+
+config.default_mark_width_tolerance = 4
+config.default_mark_height_tolerance = 4
 ```
 
 ### Intensity percentual
@@ -285,11 +306,20 @@ config.default_marks_options = %w{A B C D E}
 
 ```ruby
 # Defines the distance (in pixel) between the middle of a mark and the middle of the next mark in the same group.
-# The scan will begin in the first mark, by the value in pixels it have from the right corner of the clock.
-# After it, each mark option in the group will be checked based in this distance.
+# This option is used to try suppose not found marks.
 # The default value is 25
 
 config.default_distance_between_marks = 25
+```
+
+###  Adjust bnconsistent bubbles
+  
+```ruby
+# If true, it will perform an analysis in each group in order to see if there's more or less than expected bubbles, 
+# an will try to remove or add these inconsistent marks.
+# The default value is true
+
+config.adjust_inconsistent_bubbles = true
 ```
 
 
@@ -298,6 +328,14 @@ Group Configuration Options
 
 The General Configuration Options is more generic for the entire document. So, you can have some particularities
 when defining a group. So:
+
+### Expected coordinates
+
+```ruby
+# This configuration defines the area coordinate where the group is expected to be. 
+
+group.expected_coordinates = {x1: 145, y1: 780, x2: 270, y2: 1290}
+```
 
 ### Mark sizes
 
@@ -316,15 +354,6 @@ group.mark_height = RubyMarks.default_mark_height
 group.marks_options = RubyMarks.default_marks_options
 ```
 
-### Distance in axis X from clock
-
-```ruby
-# Defines the distance from the right corner of the clock mark to the middle of the first mark in the group
-# It don't have a default value, you MUST set this value for each group in your document
-
-group.x_distance_from_clock = 89
-```
-
 ### Distance Between Marks
 
 ```ruby
@@ -333,26 +362,25 @@ group.x_distance_from_clock = 89
 group.distance_between_marks = RubyMarks.default_distance_between_marks
 ```
 
-### Clocks range
+### Expected lines
 
 ```ruby
-# Defines the clock ranges this group belongs to. This range that will consider what clock mark
-# should be returned in the result of the scan.
+# It overwrites the default_expected_lines values for the group you configure it. 
 
-group.clocks_range = 1..5   
+group.expected_lines = @recognizer.config.default_expected_lines
 ```
 
 
 Watchers
 --------
 
-Sometimes, due some image flaws, the scan can't recognize some clock mark, or a mark, or even recognize 
+Sometimes, due some image flaws, the scan can't recognize some group, or a mark, or even recognize 
 more than one mark in a clock row in the same group when it is not expected. Then, you can place some 
-watchers, that will perform some custom code made by yourself in those cases. The available watchers are:
-In the watchers you can, for example, apply a deskew in image and re-run the scan. But, be advised, if you 
-call the scan method again inside the watcher, you should make sure that you have a way to leave the watcher
-to avoid a endless loop. You always can check how many times the watcher got raised by checking in 
-`recognizer.raised_watchers[:watcher_name]` hash.
+watchers, that will perform some custom code made by yourself in those cases, such applies a deskew 
+in image and re-run the scan, for example. 
+But, be advised, if you call the scan method again inside the watcher, you should make sure that you 
+have a way to leave the watcher to avoid a endless loop. You always can check how many times the watcher 
+got raised by checking in `recognizer.raised_watchers[:watcher_name]` hash.
 
 
 ### Scan Mark Watcher
@@ -390,14 +418,15 @@ recognizer.add_watcher :scan_multiple_marked_watcher do |recognizer, result|
 end
 ```
 
-### Clock Mark Difference Watcher
+### Incorrect Group Watcher
 
 ```ruby
-# Will execute your custom code if didn't recognizes your expected clock marks count.
-# In order to raise this watcher you must define the `config.expected_clocks_count`.
-# It returns the recognizer object.
+# Will execute your custom code if didn't a group isn't found, or it have a line count different than expected,
+# or in one or more lines the options marks found are different of the specified in marks options.
+# It returns the recognizer object, a boolean value to incorrect expected lines count, and a boolean value
+# to incorrect bubble line found, and a boolean value to bubbles adjusted or not.
 
-recognizer.add_watcher :clock_mark_difference_watcher do |recognizer|
+recognizer.add_watcher :clock_mark_difference_watcher do |recognizer, incorrect_expected_lines, incorrect_bubble_line_found, bubbles_adjusted|
   # place your custom code 
 end
 ```
