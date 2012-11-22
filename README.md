@@ -426,7 +426,7 @@ end
 # It returns the recognizer object, a boolean value to incorrect expected lines count, and a boolean value
 # to incorrect bubble line found, and a boolean value to bubbles adjusted or not.
 
-recognizer.add_watcher :clock_mark_difference_watcher do |recognizer, incorrect_expected_lines, incorrect_bubble_line_found, bubbles_adjusted|
+recognizer.add_watcher :incorrect_group_watcher do |recognizer, incorrect_expected_lines, incorrect_bubble_line_found, bubbles_adjusted|
   # place your custom code 
 end
 ```
