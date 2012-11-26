@@ -6,11 +6,10 @@ module RubyMarks
     attr_accessor :mark_width, :mark_height, :marks_options, :coordinates, :expected_coordinates,
                   :mark_width_tolerance, :mark_height_tolerance, :marks, :distance_between_marks
 
-
     def initialize(label, recognizer)
       @label = label
       @recognizer = recognizer
-      
+
       @mark_width  = @recognizer.config.default_mark_width
       @mark_height = @recognizer.config.default_mark_height
 

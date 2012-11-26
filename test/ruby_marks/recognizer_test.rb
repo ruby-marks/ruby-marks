@@ -138,7 +138,7 @@ class RubyMarks::RecognizerTest < Test::Unit::TestCase
     @file = 'assets/sheet_demo1_invalid.png'
     @recognizer.file = @file 
 
-    @recognizer.add_watcher :incorrect_group_watcher 
+    @recognizer.add_watcher :incorrect_group_watcher
 
     @recognizer.scan
     assert @recognizer.raised_watchers.include?(:incorrect_group_watcher)

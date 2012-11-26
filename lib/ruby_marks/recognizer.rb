@@ -4,7 +4,7 @@ module RubyMarks
   class Recognizer
     
     attr_reader   :file, :raised_watchers, :groups, :watchers, :file_str, :original_file_str
-    attr_accessor :config
+    attr_accessor :config, :groups_detected
 
 
     def initialize
@@ -23,6 +23,7 @@ module RubyMarks
       @file = @file.threshold(@config.calculated_threshold_level) 
       @original_file = @file
       @file = @file.edge(@config.edge_level)
+      @groups_detected = false
 
       @groups.each_pair do |label, group|
         group.marks = Hash.new { |hash, key| hash[key] = [] }
@@ -84,7 +85,7 @@ module RubyMarks
       result = Hash.new { |hash, key| hash[key] = [] }
       result.tap do |result|
  
-        self.detect_groups
+        self.detect_groups unless @groups_detected
 
         @groups.each_pair do |label, group|        
           marks = Hash.new { |hash, key| hash[key] = [] }
@@ -92,14 +93,12 @@ module RubyMarks
             value.each do |mark|
               marks[line] << mark.value if mark.marked?
             end
+
+            multiple_marked_found = true if marks[line].size > 1            
+            unmarked_group_found  = true if marks[line].empty?
           end
-          
-          if marks.any?
-            result[group.label.to_sym] = marks
-            multiple_marked_found = true if marks.size > 1
-          else
-            unmarked_group_found = true
-          end  
+          marks.delete_if { |line, value| value.empty? }
+          result[group.label.to_sym] = marks if marks.any?
         end
 
         raise_watcher :scan_unmarked_watcher, result if unmarked_group_found
@@ -112,8 +111,8 @@ module RubyMarks
     def detect_groups    
       file_str = RubyMarks::ImageUtils.export_file_to_str(@file)
       original_file_str = RubyMarks::ImageUtils.export_file_to_str(@original_file)
-      incorrect_bubble_line_found = false
-      bubbles_adjusted = false
+      incorrect_bubble_line_found = Hash.new { |hash, key| hash[key] = [] }
+      bubbles_adjusted = []
       incorrect_expected_lines = false
       @groups.each_pair do |label, group|
         next unless group.expected_coordinates.any?
@@ -185,8 +184,6 @@ module RubyMarks
               first_position += marks.first.coordinates[:x1]
 
               elements_position_count += 1
-            else
-              incorrect_bubble_line_found = true
             end
           end
 
@@ -204,7 +201,7 @@ module RubyMarks
 
                     group.marks[line].delete(current_mark)
                     reprocess = true
-                    bubbles_adjusted = true
+                    bubbles_adjusted << current_mark.coordinates
                     break 
 
                   else
@@ -248,7 +245,7 @@ module RubyMarks
                       group.marks[line] << current_mark
                       group.marks[line].sort! { |a, b| a.coordinates[:x1] <=> b.coordinates[:x1] }
                       reprocess = true
-                      bubbles_adjusted = true
+                      bubbles_adjusted << current_mark.coordinates
                       break
                     end
                   end
@@ -261,11 +258,16 @@ module RubyMarks
             end
           end
 
+          group.marks.each_pair do |line, marks|
+            if marks.count != group.marks_options.count 
+              incorrect_bubble_line_found[group.label.to_sym] << line
+            end
+          end
         end
       end  
-
-      if incorrect_bubble_line_found || bubbles_adjusted || incorrect_expected_lines
-        raise_watcher :incorrect_group_watcher, incorrect_expected_lines, incorrect_bubble_line_found, bubbles_adjusted 
+      @groups_detected = true
+      if incorrect_bubble_line_found.any? || bubbles_adjusted.any? || incorrect_expected_lines 
+        raise_watcher :incorrect_group_watcher, incorrect_expected_lines, incorrect_bubble_line_found, bubbles_adjusted.flatten 
       end
     end
 
@@ -370,7 +372,7 @@ module RubyMarks
 
       file.tap do |file|
 
-        self.detect_groups
+        self.detect_groups unless @groups_detected
 
         @groups.each_pair do |label, group|  
 

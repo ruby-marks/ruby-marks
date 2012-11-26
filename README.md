@@ -423,8 +423,10 @@ end
 ```ruby
 # Will execute your custom code if didn't a group isn't found, or it have a line count different than expected,
 # or in one or more lines the options marks found are different of the specified in marks options.
-# It returns the recognizer object, a boolean value to incorrect expected lines count, and a boolean value
-# to incorrect bubble line found, and a boolean value to bubbles adjusted or not.
+# It returns the recognizer object, a boolean value to incorrect expected lines count, and a hash with the 
+# incorrect bubble lines found, and a hash with the coordinates of bubbles adjusted.
+# Pay attention on incorrect_expected_lines and incorrect_bubble_line_found, because if some of this variables
+# becomes present, then your document may have an incorrect result scan...
 
 recognizer.add_watcher :incorrect_group_watcher do |recognizer, incorrect_expected_lines, incorrect_bubble_line_found, bubbles_adjusted|
   # place your custom code 
