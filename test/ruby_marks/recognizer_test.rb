@@ -150,5 +150,16 @@ class RubyMarks::RecognizerTest < Test::Unit::TestCase
   end
 
 
+  def test_should_make_timeout_watcher_raise_up  
+    @recognizer.configure do |config|
+      config.scan_timeout = 1
+    end
+
+    @recognizer.add_watcher :timed_out_watcher
+
+    @recognizer.scan
+    assert @recognizer.raised_watchers.include?(:timed_out_watcher)
+  end
+
 end
  

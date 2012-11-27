@@ -85,7 +85,13 @@ module RubyMarks
       result = Hash.new { |hash, key| hash[key] = [] }
       result.tap do |result|
  
-        self.detect_groups unless @groups_detected
+        begin 
+          Timeout.timeout(@config.scan_timeout) do
+            self.detect_groups unless @groups_detected 
+          end        
+        rescue Timeout::Error
+          raise_watcher :timed_out_watcher
+        end       
 
         @groups.each_pair do |label, group|        
           marks = Hash.new { |hash, key| hash[key] = [] }
@@ -114,6 +120,7 @@ module RubyMarks
       incorrect_bubble_line_found = Hash.new { |hash, key| hash[key] = [] }
       bubbles_adjusted = []
       incorrect_expected_lines = false
+
       @groups.each_pair do |label, group|
         next unless group.expected_coordinates.any?
 
@@ -372,7 +379,13 @@ module RubyMarks
 
       file.tap do |file|
 
-        self.detect_groups unless @groups_detected
+        begin 
+          Timeout.timeout(@config.scan_timeout) do
+            self.detect_groups unless @groups_detected 
+          end        
+        rescue Timeout::Error
+          raise_watcher :timed_out_watcher
+        end  
 
         @groups.each_pair do |label, group|  
 

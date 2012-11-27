@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    ruby_marks (0.2.1)
+    ruby_marks (0.2.2)
       rmagick
 
 GEM
@@ -9,6 +9,7 @@ GEM
   specs:
     rake (0.9.2.2)
     rmagick (2.13.1)
+    sane_timeout (0.1)
 
 PLATFORMS
   ruby
@@ -17,3 +18,4 @@ DEPENDENCIES
   rake
   rmagick
   ruby_marks!
+  sane_timeout

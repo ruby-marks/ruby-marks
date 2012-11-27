@@ -246,6 +246,15 @@ config.edge_level = 4
 config.threshold_level = 60  
 ```
 
+### Scan timeout 
+
+```ruby
+# Sets a timeout in seconds, to break long time scans.   
+# The default value is 0 (zero) and means there's no timeout. Any value will quit the scan and raise timed_out_watcher
+
+config.scan_timeou = 0  
+```
+
 ### Expected lines
 
 ```ruby
@@ -429,6 +438,17 @@ end
 # becomes present, then your document may have an incorrect result scan...
 
 recognizer.add_watcher :incorrect_group_watcher do |recognizer, incorrect_expected_lines, incorrect_bubble_line_found, bubbles_adjusted|
+  # place your custom code 
+end
+```
+
+### Timed Out Watcher
+
+```ruby
+# Will execute your custom code if your scan outrun the specified timeout in configuration. It returns you recognizer 
+# object.
+
+recognizer.add_watcher :timed_out_watcher do |recognizer|
   # place your custom code 
 end
 ```
