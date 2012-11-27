@@ -97,8 +97,8 @@ module RubyMarks
             multiple_marked_found = true if marks[line].size > 1            
             unmarked_group_found  = true if marks[line].empty?
           end
-          marks.delete_if { |line, value| value.empty? }
-          result[group.label.to_sym] = marks if marks.any?
+
+          result[group.label.to_sym] = marks 
         end
 
         raise_watcher :scan_unmarked_watcher, result if unmarked_group_found

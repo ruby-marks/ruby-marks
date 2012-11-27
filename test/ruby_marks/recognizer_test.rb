@@ -130,7 +130,12 @@ class RubyMarks::RecognizerTest < Test::Unit::TestCase
         4 => ['D']       
       }
     }
-    assert_equal expected_hash, @recognizer.scan 
+    result = @recognizer.scan
+    result.each_pair do |group, lines|
+      lines.delete_if { |line, value| value.empty? }
+    end
+    result.delete_if { |group, lines| lines.empty? }
+    assert_equal expected_hash, result 
   end
 
 
