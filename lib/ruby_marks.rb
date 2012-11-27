@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'RMagick'
+require 'sane_timeout'
 require 'ruby_marks/version'
 require 'ruby_marks/support'
 
@@ -10,6 +11,9 @@ module RubyMarks
 
   mattr_accessor :threshold_level
   @@threshold_level = 60
+
+  mattr_accessor :scan_timeout
+  @@scan_timeout = 0
 
   mattr_accessor :adjust_inconsistent_bubbles
   @@adjust_inconsistent_bubbles = true
@@ -56,7 +60,8 @@ module RubyMarks
     :scan_mark_watcher,
     :scan_unmarked_watcher,
     :scan_multiple_marked_watcher,
-    :incorrect_group_watcher
+    :incorrect_group_watcher,
+    :timed_out_watcher
   ]
 end
 

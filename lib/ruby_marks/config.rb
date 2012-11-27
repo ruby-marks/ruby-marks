@@ -4,7 +4,7 @@ module RubyMarks
   class Config
 
     attr_accessor :intensity_percentual, :edge_level, :default_marks_options, :threshold_level, 
-                  :default_mark_width, :default_mark_height, 
+                  :default_mark_width, :default_mark_height, :scan_timeout,
                   :default_mark_width_tolerance, :default_mark_height_tolerance,
                   :default_distance_between_marks, :adjust_inconsistent_bubbles,
                   :default_expected_lines
@@ -14,7 +14,8 @@ module RubyMarks
       @recognizer = recognizer
       @threshold_level = RubyMarks.threshold_level
       @edge_level = RubyMarks.edge_level
-      
+      @scan_timeout = RubyMarks.scan_timeout
+
       @adjust_inconsistent_bubbles  = RubyMarks.adjust_inconsistent_bubbles
 
       @intensity_percentual = RubyMarks.intensity_percentual
