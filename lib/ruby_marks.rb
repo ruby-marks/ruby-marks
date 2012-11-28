@@ -1,6 +1,6 @@
 require 'rubygems'
 require 'RMagick'
-require 'sane_timeout'
+require 'timeout'
 require 'ruby_marks/version'
 require 'ruby_marks/support'
 
