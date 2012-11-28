@@ -21,7 +21,8 @@ Gem::Specification.new do |s|
   
   # Dependencies
   s.add_dependency('rmagick') 
-
+  s.add_dependency('sane_timeout')
+   
   magick_version = `convert -version`
 
   if magick_version =~ /Q16/ 
