@@ -142,7 +142,7 @@ module RubyMarks
                mark_height >= group.mark_height_with_down_tolerance
 
               group.marks.each_pair do |key, marks_array|
-                mark_positions = mark[:y1]-10..mark[:y1]+10
+                mark_positions = mark[:y1]-group.mark_width_with_down_tolerance..mark[:y1]+group.mark_width_with_down_tolerance
 
                 marks_array.each do |m|
                   if mark_positions.include?(m.coordinates[:y1])
