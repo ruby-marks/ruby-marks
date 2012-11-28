@@ -139,9 +139,7 @@ module RubyMarks
             mark_height = RubyMarks::ImageUtils.calc_height(mark[:y1], mark[:y2])
             
             if mark_width  >= group.mark_width_with_down_tolerance  && 
-               mark_width  <= group.mark_width_with_up_tolerance    &&
-               mark_height >= group.mark_height_with_down_tolerance && 
-               mark_height <= group.mark_height_with_up_tolerance
+               mark_height >= group.mark_height_with_down_tolerance
 
               group.marks.each_pair do |key, marks_array|
                 mark_positions = mark[:y1]-10..mark[:y1]+10
