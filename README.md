@@ -162,8 +162,7 @@ flagged_document = recognizer.flag_all_marks
 flagged_document.write(temp_filename)
 ```  
 
-Will return the image below with recognized clock marks in green, the clock_marks_scan_x line in blue and
-each mark position in a red cross:
+Will return the image below:
 
 [![Flagged Document Example](https://raw.github.com/andrerpbts/ruby_marks/master/assets/sheet_demo2_flagged.png)](https://github.com/andrerpbts/ruby_marks/blob/master/assets/sheet_demo2_flagged.png)
 
@@ -252,7 +251,7 @@ config.threshold_level = 60
 # Sets a timeout in seconds, to break long time scans.   
 # The default value is 0 (zero) and means there's no timeout. Any value will quit the scan and raise timed_out_watcher
 
-config.scan_timeou = 0  
+config.scan_timeout = 0  
 ```
 
 ### Expected lines
@@ -319,16 +318,6 @@ config.default_marks_options = %w{A B C D E}
 # The default value is 25
 
 config.default_distance_between_marks = 25
-```
-
-###  Adjust bnconsistent bubbles
-  
-```ruby
-# If true, it will perform an analysis in each group in order to see if there's more or less than expected bubbles, 
-# an will try to remove or add these inconsistent marks.
-# The default value is true
-
-config.adjust_inconsistent_bubbles = true
 ```
 
 

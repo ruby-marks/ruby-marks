@@ -15,9 +15,6 @@ module RubyMarks
   mattr_accessor :scan_timeout
   @@scan_timeout = 0
 
-  mattr_accessor :adjust_inconsistent_bubbles
-  @@adjust_inconsistent_bubbles = true
-
   mattr_accessor :default_mark_width_tolerance
   @@default_mark_width_tolerance = 4
 
