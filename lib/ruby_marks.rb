@@ -15,6 +15,12 @@ module RubyMarks
   mattr_accessor :scan_timeout
   @@scan_timeout = 0
 
+  mattr_accessor :default_block_width_tolerance
+  @@default_block_width_tolerance = 100
+
+  mattr_accessor :default_block_height_tolerance
+  @@default_block_height_tolerance = 100
+
   mattr_accessor :default_mark_width_tolerance
   @@default_mark_width_tolerance = 4
 

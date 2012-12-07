@@ -128,7 +128,7 @@ module RubyMarks
         line = 0
         group_center = RubyMarks::ImageUtils.image_center(group.expected_coordinates)
 
-        block = find_block_marks(file_str, group_center[:x], group_center[:y], group.expected_coordinates)
+        block = find_block_marks(file_str, group_center[:x], group_center[:y], group)
         if block
           group.coordinates = {x1: block[:x1], x2: block[:x2], y1: block[:y1], y2: block[:y2]}
          
@@ -259,7 +259,8 @@ module RubyMarks
     end
 
 
-    def find_block_marks(image, x, y, expected_coordinates)
+    def find_block_marks(image, x, y, group)
+      expected_coordinates = group.expected_coordinates
       found_blocks = []
       expected_width  = RubyMarks::ImageUtils.calc_width(expected_coordinates[:x1], expected_coordinates[:x2])
       expected_height = RubyMarks::ImageUtils.calc_height(expected_coordinates[:y1], expected_coordinates[:y2]) 
@@ -274,8 +275,8 @@ module RubyMarks
             block[:width]  = RubyMarks::ImageUtils.calc_width(block[:x1], block[:x2]) 
             block[:height] = RubyMarks::ImageUtils.calc_height(block[:y1], block[:y2])                       
 
-            block_width_with_tolerance  = block[:width]  + 100
-            block_height_with_tolerance = block[:height] + 100
+            block_width_with_tolerance  = block[:width]  + group.block_width_tolerance
+            block_height_with_tolerance = block[:height] + group.block_height_tolerance
 
 
             return block if block_width_with_tolerance >= expected_width && 

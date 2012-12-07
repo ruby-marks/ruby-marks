@@ -6,8 +6,8 @@ module RubyMarks
     attr_accessor :intensity_percentual, :edge_level, :default_marks_options, :threshold_level, 
                   :default_mark_width, :default_mark_height, :scan_timeout,
                   :default_mark_width_tolerance, :default_mark_height_tolerance,
-                  :default_distance_between_marks,
-                  :default_expected_lines
+                  :default_distance_between_marks, :default_expected_lines,
+                  :default_block_width_tolerance, :default_block_height_tolerance
 
     
     def initialize(recognizer)
@@ -18,6 +18,9 @@ module RubyMarks
 
       @intensity_percentual = RubyMarks.intensity_percentual
       
+      @default_block_width_tolerance  = RubyMarks.default_block_width_tolerance
+      @default_block_height_tolerance = RubyMarks.default_block_height_tolerance
+
       @default_mark_width  = RubyMarks.default_mark_width
       @default_mark_height = RubyMarks.default_mark_height
 
