@@ -264,6 +264,22 @@ config.scan_timeout = 0
 config.default_expected_lines = 20
 ```
 
+
+### Default blocks sizes tolerances
+
+```ruby
+# Defines the tolerance in width and height of the group blocks (in pixels) to compare with de expected block size.
+# This tolerance is intended to make the scan recognizes the correct whole group. The scanned area + this tolerance 
+# should be greater than the expected sizes of the block, in order to consider it. 
+# In small size groups, you should reduce this parameter in order to don't capture weong groups positions, such a 
+# not marked bubble as a group, for example.
+# The default values is 100 for both width and height, and should be adjusted for your documents. 
+
+config.default_block_width_tolerance = 100
+config.default_block_height_tolerance = 100
+```
+
+
 ### Default mark sizes
 
 ```ruby
@@ -279,8 +295,8 @@ config.default_mark_height = 20
 ### Default mark sizes tolerances
 
 ```ruby
-# Defines the tolerance in width and height of the marks (in pixels). With the the mark size, if the recognized 
-# mark exceeds or stricts those values, it will be ignored.
+# Defines the tolerance in width and height of the marks (in pixels). With default_mark_width and default_mark_width
+# size, if the recognized mark exceeds or stricts those values, it will be ignored.
 # The default values is 4 for both width and height. 
 
 config.default_mark_width_tolerance = 4
@@ -335,6 +351,15 @@ when defining a group. So:
 group.expected_coordinates = {x1: 145, y1: 780, x2: 270, y2: 1290}
 ```
 
+### Block sizes tolerances
+
+```ruby
+# It overwrites the default_block_width_tolerance and default_block_height_tolerance values for the group you configure it. 
+
+group.block_width_tolerance  = RubyMarks.default_block_width_tolerance
+group.block_height_tolerance = RubyMarks.default_block_height_tolerance
+```
+
 ### Mark sizes
 
 ```ruby
@@ -342,6 +367,15 @@ group.expected_coordinates = {x1: 145, y1: 780, x2: 270, y2: 1290}
 
 group.mark_width  = RubyMarks.default_mark_width
 group.mark_height = RubyMarks.default_mark_height
+```
+
+### Mark sizes tolerances
+
+```ruby
+# It overwrites the default_mark_width_tolerance and default_mark_height_tolerance values for the group you configure it. 
+
+group.mark_width_tolerance  = RubyMarks.default_mark_width_tolerance
+group.mark_height_tolerance = RubyMarks.default_mark_height_tolerance
 ```
 
 ### Marks options
