@@ -18,6 +18,9 @@ module RubyMarks
       self.reset_document
       @file = nil
       @file_str = nil
+      @original_file = nil
+      @original_file_str = nil
+
       @file = Magick::Image.read(file).first
       @file = @file.quantize(256, Magick::GRAYColorspace)     
       @file = @file.threshold(@config.calculated_threshold_level) 
@@ -26,10 +29,11 @@ module RubyMarks
       @groups_detected = false
 
       @groups.each_pair do |label, group|
+        group.marks = nil
         group.marks = Hash.new { |hash, key| hash[key] = [] }
       end        
     end
-
+    
 
     def reset_document
       @current_position = {x: 0, y: 0}

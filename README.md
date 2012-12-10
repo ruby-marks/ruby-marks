@@ -151,7 +151,7 @@ The result image should be like this one (note that all the groups are separated
 [![Document Example](https://raw.github.com/andrerpbts/ruby_marks/master/assets/sheet_demo2_edge.png)](https://github.com/andrerpbts/ruby_marks/blob/master/assets/sheet_demo2_edge.png)
 
 
-There's a method you can call to will help you to identify how the document is being recognized. This method return the image
+There's a method you can call to help you to identify how the document is being recognized. This method return the image
 with the showing where is the expected groups coordinates are, where are the actual groups coordinates, and where the marks 
 is being recognized in each group.
 
