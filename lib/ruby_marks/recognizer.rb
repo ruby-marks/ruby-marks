@@ -135,8 +135,12 @@ module RubyMarks
         block = find_block_marks(file_str, group_center[:x], group_center[:y], group)
         if block
           group.coordinates = {x1: block[:x1], x2: block[:x2], y1: block[:y1], y2: block[:y2]}
-         
-          marks_blocks = find_marks(original_file_str, group)
+          
+          if @config.scan_mode == :grid
+            marks_blocks = find_marks_grid(group)
+          else
+            marks_blocks = find_marks(original_file_str, group)
+          end
           marks_blocks.sort!{ |a,b| a[:y1] <=> b[:y1] }
           mark_ant = nil
           marks_blocks.each do |mark|
@@ -294,6 +298,26 @@ module RubyMarks
       end
     end
 
+    def find_marks_grid(group)
+      block = group.coordinates
+      blocks = []
+      blocks.tap do |blocks|
+        block_width  = RubyMarks::ImageUtils.calc_width(block[:x1], block[:x2])
+        block_height = RubyMarks::ImageUtils.calc_height(block[:y1], block[:y2])
+        lines  = @config.default_expected_lines
+        columns = @config.default_marks_options.size
+        distance_lin = block_height / lines
+        distance_col = block_width / columns
+        lines.times do |lin|
+          columns.times do |col|
+            blocks << { :x1 => block[:x1] + (col * distance_col), 
+                        :y1 => block[:y1] + (lin * distance_lin), 
+                        :x2 => block[:x1] + (col * distance_col) + distance_col,
+                        :y2 => block[:y1] + (lin * distance_lin) + distance_col }
+          end
+        end
+      end    
+    end
 
     def find_marks(image, group)
       block = group.coordinates

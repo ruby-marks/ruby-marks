@@ -7,7 +7,7 @@ module RubyMarks
                   :default_mark_width, :default_mark_height, :scan_timeout,
                   :default_mark_width_tolerance, :default_mark_height_tolerance,
                   :default_distance_between_marks, :default_expected_lines,
-                  :default_block_width_tolerance, :default_block_height_tolerance
+                  :default_block_width_tolerance, :default_block_height_tolerance, :scan_mode
 
     
     def initialize(recognizer)

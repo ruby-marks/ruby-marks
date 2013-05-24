@@ -10,6 +10,7 @@ class RubyMarks::RecognizerTest < Test::Unit::TestCase
     @positions[:unmarked_position] = {x: 161, y: 994}
 
     @recognizer.configure do |config|  
+      config.scan_mode = :grid
       config.define_group :first  do |group|
         group.expected_coordinates = {x1: 145, y1: 780, x2: 270, y2: 1290}
       end
