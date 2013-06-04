@@ -13,26 +13,28 @@ class RubyMarks::RecognizerGridTest < Test::Unit::TestCase
     
       config.scan_mode = :grid
       config.default_expected_lines = 5
-      config.intensity_percentual = 25
+      config.intensity_percentual = 75
+      config.auto_ajust_block_width = :right
+      config.default_block_width_tolerance = 10      
       
       config.define_group :um do |group|
-        group.expected_coordinates = {x1: 100, y1: 200, x2: 250, y2: 350}
+        group.expected_coordinates = {x1: 160, y1: 235, x2: 285, y2: 360}
       end
 
       config.define_group :dois do |group|
-        group.expected_coordinates = {x1: 350, y1: 200, x2: 500, y2: 350}
+        group.expected_coordinates = {x1: 350, y1: 200, x2: 475, y2: 350}
       end
 
       config.define_group :tres do |group|
-        group.expected_coordinates = {x1: 570, y1: 200, x2: 720, y2: 350}
+        group.expected_coordinates = {x1: 570, y1: 200, x2: 695, y2: 350}
       end
 
       config.define_group :quatro do |group|
-        group.expected_coordinates = {x1: 790, y1: 200, x2: 940, y2: 350}
+        group.expected_coordinates = {x1: 790, y1: 200, x2: 915, y2: 350}
       end
 
       config.define_group :cinco do |group|
-        group.expected_coordinates = {x1: 1010, y1: 200, x2: 1160, y2: 350}
+        group.expected_coordinates = {x1: 1010, y1: 200, x2: 1135, y2: 350}
       end
     end
 
@@ -52,38 +54,38 @@ class RubyMarks::RecognizerGridTest < Test::Unit::TestCase
   def test_should_scan_the_recognizer_and_get_a_hash_of_marked_marks
     expected_hash = { 
       um: {  
-        1 => ['B'],
-        2 => ['B'],
-        3 => ['A'],
+        1 => ['A'],
+        2 => ['A'],
+        3 => ['D'],
         4 => ['B'],
-        5 => ['A']
+        5 => ['B']
       },
       dois: {  
-        1 => ['D'],
+        1 => ['B'],
         2 => ['A'],
-        3 => ['C'],
+        3 => ['A'],
         4 => ['A'],
         5 => ['D']
       },
       tres: {  
-        1 => ['B'],
-        2 => ['A'],
-        3 => ['A'],
-        4 => ['A'],       
-        5 => ['B']
-      },
-      quatro: {  
-        1 => ['B'],
-        2 => ['C'],
-        3 => ['A'],
-        4 => ['C'],       
-        5 => ['E']
-      },
-      cinco: {  
         1 => ['A'],
         2 => ['B'],
         3 => ['A'],
-        4 => ['A'],      
+        4 => ['A'],       
+        5 => ['D']
+      },
+      quatro: {  
+        1 => ['B'],
+        2 => ['D'],
+        3 => ['A'],
+        4 => ['C'],       
+        5 => ['C']
+      },
+      cinco: {  
+        1 => ['C'],
+        2 => ['D'],
+        3 => ['A'],
+        4 => ['C'],      
         5 => ['C']
       }
     }

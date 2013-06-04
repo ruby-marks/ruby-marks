@@ -140,70 +140,88 @@ module RubyMarks
             marks_blocks = find_marks_grid(group)
           else
             marks_blocks = find_marks(original_file_str, group)
-          end
-          marks_blocks.sort!{ |a,b| a[:y1] <=> b[:y1] }
-          mark_ant = nil
-          marks_blocks.each do |mark|
-            mark_width  = RubyMarks::ImageUtils.calc_width(mark[:x1], mark[:x2])
-            mark_height = RubyMarks::ImageUtils.calc_height(mark[:y1], mark[:y2])
+            marks_blocks.sort!{ |a,b| a[:y1] <=> b[:y1] }
+            mark_ant = nil
+            marks_blocks.each do |mark|
+              mark_width  = RubyMarks::ImageUtils.calc_width(mark[:x1], mark[:x2])
+              mark_height = RubyMarks::ImageUtils.calc_height(mark[:y1], mark[:y2])
 
-            if mark_width  >= group.mark_width_with_down_tolerance  && 
-               mark_height >= group.mark_height_with_down_tolerance
+              if mark_width  >= group.mark_width_with_down_tolerance  && 
+                 mark_height >= group.mark_height_with_down_tolerance
 
-              mark_positions = mark[:y1]-10..mark[:y1]+10
-              line += 1 unless mark_ant && mark_positions.include?(mark_ant[:y1])
-              mark[:line] = line
-              mark_ant = mark
+                mark_positions = mark[:y1]-10..mark[:y1]+10
+                line += 1 unless mark_ant && mark_positions.include?(mark_ant[:y1])
+                mark[:line] = line
+                mark_ant = mark
+              end
             end
-          end
 
-          marks_blocks.delete_if { |m| m[:line].nil? }
-          marks_blocks.sort_by!{ |a| [a[:line], a[:x1]] }
+            marks_blocks.delete_if { |m| m[:line].nil? }
+            marks_blocks.sort_by!{ |a| [a[:line], a[:x1]] }
 
-          mark_ant = nil
-          marks_blocks.each do |mark|
-            if mark_ant && mark_ant[:line] == mark[:line]
-              mark_ant_center = RubyMarks::ImageUtils.image_center(mark_ant)
-              mark_center     = RubyMarks::ImageUtils.image_center(mark)
-              if (mark_ant_center[:x] - mark_center[:x]).abs < 10
-                mark[:conflict] = true
-                mark[:conflicting_mark] = mark_ant
+            mark_ant = nil
+            marks_blocks.each do |mark|
+              if mark_ant && mark_ant[:line] == mark[:line]
+                mark_ant_center = RubyMarks::ImageUtils.image_center(mark_ant)
+                mark_center     = RubyMarks::ImageUtils.image_center(mark)
+                if (mark_ant_center[:x] - mark_center[:x]).abs < 10
+                  mark[:conflict] = true
+                  mark[:conflicting_mark] = mark_ant
+                else
+                  mark_ant = mark  
+                end
               else
                 mark_ant = mark  
               end
-            else
-              mark_ant = mark  
             end
-          end
-          marks_blocks.delete_if { |m| m[:conflict] }
+            marks_blocks.delete_if { |m| m[:conflict] }
 
-          first_position  = 0
-          elements_position_count = 0
-          marks_blocks.map { |m| m[:line] }.each do |line|
-            marks = marks_blocks.select { |m| m[:line] == line }
-            if marks.count == group.marks_options.count
-              first_position += marks.first[:x1]
-              elements_position_count += 1
-            end
-          end
-
-          if elements_position_count > 0
-            first_position = first_position / elements_position_count
-            distance = group.distance_between_marks * (group.marks_options.count - 1)
-            last_position  = first_position + distance
-            marks_blocks.delete_if { |mark| mark[:x1] < first_position - 10 ||
-                                            mark[:x1] > last_position  + 10 }
-
+            first_position  = 0
+            elements_position_count = 0
             marks_blocks.map { |m| m[:line] }.each do |line|
-              loop do
-                reprocess = false
-                marks = marks_blocks.select { |m| m[:line] == line }
-                marks.each_with_index do |current_mark, index|
-                  if index == 0
-                    first_mark_position = first_position-5..first_position+5
-                    unless first_mark_position.include?(current_mark[:x1])
-                      new_mark = {x1: first_position,
-                                  x2: first_position + group.mark_width,
+              marks = marks_blocks.select { |m| m[:line] == line }
+              if marks.count == group.marks_options.count
+                first_position += marks.first[:x1]
+                elements_position_count += 1
+              end
+            end
+
+            if elements_position_count > 0
+              first_position = first_position / elements_position_count
+              distance = group.distance_between_marks * (group.marks_options.count - 1)
+              last_position  = first_position + distance
+              marks_blocks.delete_if { |mark| mark[:x1] < first_position - 10 ||
+                                              mark[:x1] > last_position  + 10 }
+
+              marks_blocks.map { |m| m[:line] }.each do |line|
+                loop do
+                  reprocess = false
+                  marks = marks_blocks.select { |m| m[:line] == line }
+                  marks.each_with_index do |current_mark, index|
+                    if index == 0
+                      first_mark_position = first_position-5..first_position+5
+                      unless first_mark_position.include?(current_mark[:x1])
+                        new_mark = {x1: first_position,
+                                    x2: first_position + group.mark_width,
+                                    y1: current_mark[:y1],
+                                    y2: current_mark[:y1] + group.mark_height,
+                                    line: line}
+                        marks_blocks << new_mark
+                        marks_blocks.sort_by!{ |a| [a[:line], a[:x1]] }
+                        bubbles_adjusted << new_mark
+                        reprocess = true
+                        break
+                      end
+                    end
+                    next_mark = marks[index + 1]
+                    distance = 0
+                    distance = next_mark[:x1] - current_mark[:x1] if next_mark
+                    if distance > group.distance_between_marks + 10 || 
+                       next_mark.nil? && index + 1 < group.marks_options.count 
+                      
+                      new_x1 = current_mark[:x1] + group.distance_between_marks
+                      new_mark = {x1: new_x1,
+                                  x2: new_x1 + group.mark_width,
                                   y1: current_mark[:y1],
                                   y2: current_mark[:y1] + group.mark_height,
                                   line: line}
@@ -212,38 +230,19 @@ module RubyMarks
                       bubbles_adjusted << new_mark
                       reprocess = true
                       break
-                    end
+                    end                  
                   end
-                  next_mark = marks[index + 1]
-                  distance = 0
-                  distance = next_mark[:x1] - current_mark[:x1] if next_mark
-                  if distance > group.distance_between_marks + 10 || 
-                     next_mark.nil? && index + 1 < group.marks_options.count 
-                    
-                    new_x1 = current_mark[:x1] + group.distance_between_marks
-                    new_mark = {x1: new_x1,
-                                x2: new_x1 + group.mark_width,
-                                y1: current_mark[:y1],
-                                y2: current_mark[:y1] + group.mark_height,
-                                line: line}
-                    marks_blocks << new_mark
-                    marks_blocks.sort_by!{ |a| [a[:line], a[:x1]] }
-                    bubbles_adjusted << new_mark
-                    reprocess = true
-                    break
-                  end                  
+                  break unless reprocess
                 end
-                break unless reprocess
               end
+            
             end
-          
           end
 
           marks_blocks.each do |mark|
             mark_width  = RubyMarks::ImageUtils.calc_width(mark[:x1], mark[:x2])
             mark_height = RubyMarks::ImageUtils.calc_height(mark[:y1], mark[:y2])
             mark_file = @original_file.crop(mark[:x1], mark[:y1], mark_width, mark_height)
-
             o_mark = RubyMarks::Mark.new group: group, 
                                          coordinates: {x1: mark[:x1], y1: mark[:y1], x2: mark[:x2], y2: mark[:y2]},
                                          image_str: RubyMarks::ImageUtils.export_file_to_str(mark_file),
@@ -264,6 +263,7 @@ module RubyMarks
       if incorrect_bubble_line_found.any? || bubbles_adjusted.any? || incorrect_expected_lines 
         raise_watcher :incorrect_group_watcher, incorrect_expected_lines, incorrect_bubble_line_found, bubbles_adjusted.flatten 
       end
+
     end
 
 
@@ -283,9 +283,31 @@ module RubyMarks
             block[:width]  = RubyMarks::ImageUtils.calc_width(block[:x1], block[:x2]) 
             block[:height] = RubyMarks::ImageUtils.calc_height(block[:y1], block[:y2])                       
 
+            if @config.scan_mode == :grid
+              if block[:width] >= expected_width + group.block_width_tolerance
+                ajust_width = block[:width] - expected_width 
+                if @config.auto_ajust_block_width == :left
+                  block[:x2] = (block[:x2] - ajust_width) + @config.edge_level
+                  block[:width] = expected_width + @config.edge_level
+                elsif @config.auto_ajust_block_width == :right
+                  block[:x1] = (block[:x1] + ajust_width) - @config.edge_level
+                  block[:width] = expected_width + @config.edge_level
+                end
+              end
+              if block[:height] > expected_height 
+                ajust_width = block[:height] - expected_height
+                if @config.auto_ajust_block_height == :top
+                  block[:y2] = (block[:y2] - ajust_height) + @config.edge_level
+                  block[:height] = expected_height + @config.edge_level
+                elsif @config.auto_ajust_block_height == :bottom
+                  block[:y1] = (block[:y1] + ajust_height) - @config.edge_level
+                  block[:height] = expected_height + @config.edge_level
+                end
+              end
+            end
+
             block_width_with_tolerance  = block[:width]  + group.block_width_tolerance
             block_height_with_tolerance = block[:height] + group.block_height_tolerance
-
 
             return block if block_width_with_tolerance >= expected_width && 
                             block_height_with_tolerance >= expected_height
@@ -310,10 +332,11 @@ module RubyMarks
         distance_col = block_width / columns
         lines.times do |lin|
           columns.times do |col|
-            blocks << { :x1 => block[:x1] + (col * distance_col), 
-                        :y1 => block[:y1] + (lin * distance_lin), 
-                        :x2 => block[:x1] + (col * distance_col) + distance_col,
-                        :y2 => block[:y1] + (lin * distance_lin) + distance_col }
+            blocks << { :x1 => block[:x1] + (col * distance_col) + @config.edge_level, 
+                        :y1 => block[:y1] + (lin * distance_lin) + @config.edge_level, 
+                        :x2 => (block[:x1] + (col * distance_col) + distance_col) - @config.edge_level,
+                        :y2 => block[:y1] + (lin * distance_lin) + distance_col - @config.edge_level,
+                        :line => lin + 1 }
           end
         end
       end    
@@ -423,7 +446,15 @@ module RubyMarks
           marks = Hash.new { |hash, key| hash[key] = [] }
           group.marks.each_pair do |line, value|
             value.each do |mark|
-              add_mark file, RubyMarks::ImageUtils.image_center(mark.coordinates)
+              mark_width  = RubyMarks::ImageUtils.calc_width(mark.coordinates[:x1], mark.coordinates[:x2])
+              mark_height = RubyMarks::ImageUtils.calc_height(mark.coordinates[:y1], mark.coordinates[:y2])
+              mark_file = @original_file.crop(mark.coordinates[:x1], mark.coordinates[:y1], mark_width, mark_height)
+              o_mark = RubyMarks::Mark.new group: group, 
+                                           coordinates: {x1: mark.coordinates[:x1], y1: mark.coordinates[:y1], x2: mark.coordinates[:x2], y2: mark.coordinates[:y2]},
+                                           image_str: RubyMarks::ImageUtils.export_file_to_str(mark_file),
+                                           line: line
+
+              add_mark file, RubyMarks::ImageUtils.image_center(mark.coordinates), mark
             end
           end
         end 
@@ -461,20 +492,36 @@ module RubyMarks
       end
     end
 
-    def add_mark(file, position)
+    def add_mark(file, position, mark=nil)
       dr = Magick::Draw.new
-      dr.annotate(file, 0, 0, position[:x]-9, position[:y]+11, "+") do
-        self.pointsize = 30
-        self.fill = '#900000'
-      end
+      if @config.scan_mode == :grid
+        dr.annotate(file, 0, 0, position[:x]-9, position[:y]+5, mark.intensity.ceil.to_s) do
+          self.pointsize = 15
+          self.fill = RubyMarks::COLORS[2]
+        end
+
+        dr = Magick::Draw.new
+        dr.stroke_width = 2
+        dr.stroke(RubyMarks::COLORS[1])         
+        dr.line(mark.coordinates[:x1], mark.coordinates[:y1], mark.coordinates[:x2], mark.coordinates[:y1])
+        dr.line(mark.coordinates[:x2], mark.coordinates[:y1], mark.coordinates[:x2], mark.coordinates[:y2])
+        dr.line(mark.coordinates[:x2], mark.coordinates[:y2], mark.coordinates[:x1], mark.coordinates[:y2])  
+        dr.line(mark.coordinates[:x1], mark.coordinates[:y2], mark.coordinates[:x1], mark.coordinates[:y1])                  
+        dr.draw(file)
+      else
+        dr.annotate(file, 0, 0, position[:x]-9, position[:y]+11, "+") do
+          self.pointsize = 30
+          self.fill = '#900000'
+        end
       
-      dr = Magick::Draw.new
-      dr.fill = '#FF0000'
-      dr.point(position[:x], position[:y])
-      dr.point(position[:x], position[:y] + 1)   
-      dr.point(position[:x] + 1, position[:y])  
-      dr.point(position[:x] + 1, position[:y] + 1)             
-      dr.draw(file)
+        dr = Magick::Draw.new
+        dr.fill = '#FF0000'
+        dr.point(position[:x], position[:y])
+        dr.point(position[:x], position[:y] + 1)   
+        dr.point(position[:x] + 1, position[:y])  
+        dr.point(position[:x] + 1, position[:y] + 1)             
+        dr.draw(file)
+      end      
     end
 
   end

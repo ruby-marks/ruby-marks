@@ -10,7 +10,7 @@ class RubyMarks::RecognizerTest < Test::Unit::TestCase
     @positions[:unmarked_position] = {x: 161, y: 994}
 
     @recognizer.configure do |config|  
-      config.scan_mode = :grid
+
       config.define_group :first  do |group|
         group.expected_coordinates = {x1: 145, y1: 780, x2: 270, y2: 1290}
       end
@@ -42,6 +42,7 @@ class RubyMarks::RecognizerTest < Test::Unit::TestCase
 
   end
 
+=begin
   def test_should_initialize_a_recognizer_with_a_valid_file
     assert_equal @file, @recognizer.filename
   end
@@ -161,6 +162,6 @@ class RubyMarks::RecognizerTest < Test::Unit::TestCase
     @recognizer.scan
     assert @recognizer.raised_watchers.include?(:timed_out_watcher)
   end
-
+=end
 end
  

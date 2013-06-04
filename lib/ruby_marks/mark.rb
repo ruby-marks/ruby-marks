@@ -12,6 +12,12 @@ module RubyMarks
 
     def marked?
       if @image_str
+        return intensity >= @group.recognizer.config.intensity_percentual
+      end
+    end
+
+    def intensity
+      if @image_str
         colors = []
 
         @image_str.each do |y|
@@ -21,7 +27,6 @@ module RubyMarks
         end
 
         intensity = colors.count(".") * 100 / colors.size
-        return intensity >= @group.recognizer.config.intensity_percentual
       end
     end
 
