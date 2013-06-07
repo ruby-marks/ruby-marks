@@ -5,7 +5,7 @@ module RubyMarks
     attr_reader   :label, :recognizer
     attr_accessor :mark_width, :mark_height, :marks_options, :coordinates, :expected_coordinates,
                   :mark_width_tolerance, :mark_height_tolerance, :marks, :distance_between_marks,
-                  :block_width_tolerance, :block_height_tolerance
+                  :block_width_tolerance, :block_height_tolerance, :expected_lines
 
     def initialize(label, recognizer)
       @label = label
