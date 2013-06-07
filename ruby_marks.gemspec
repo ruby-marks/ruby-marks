@@ -20,7 +20,7 @@ Gem::Specification.new do |s|
   # s.extra_rdoc_files        = ['README.md']
   
   # Dependencies
-  s.add_dependency('rmagick') 
+  s.add_dependency('rmagick', '2.13.1') 
    
   magick_version = `convert -version`
 

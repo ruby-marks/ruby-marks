@@ -13,7 +13,9 @@ class RubyMarks::RecognizerGridTest < Test::Unit::TestCase
     
       config.scan_mode = :grid
       config.default_expected_lines = 5
-      config.intensity_percentual = 75
+      config.intensity_percentual = 50
+      config.default_mark_height = 25
+      config.default_mark_width = 25
       config.auto_ajust_block_width = :right
       config.default_block_width_tolerance = 10      
       

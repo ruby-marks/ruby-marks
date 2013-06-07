@@ -328,14 +328,15 @@ module RubyMarks
         block_height = RubyMarks::ImageUtils.calc_height(block[:y1], block[:y2])
         lines  = @config.default_expected_lines
         columns = @config.default_marks_options.size
-        distance_lin = block_height / lines
-        distance_col = block_width / columns
+        distance_lin = @config.default_mark_height
+        distance_col = @config.default_mark_width
         lines.times do |lin|
           columns.times do |col|
-            blocks << { :x1 => block[:x1] + (col * distance_col) + @config.edge_level, 
-                        :y1 => block[:y1] + (lin * distance_lin) + @config.edge_level, 
-                        :x2 => (block[:x1] + (col * distance_col) + distance_col) - @config.edge_level,
-                        :y2 => block[:y1] + (lin * distance_lin) + distance_col - @config.edge_level,
+
+            blocks << { :x1 => @config.edge_level + block[:x1] + (col * distance_col) + ((col % 2 == 1) ? 0 : 1), 
+                        :y1 => @config.edge_level + block[:y1] + (lin * distance_lin) + ((lin % 2 == 1) ? 0 : 1), 
+                        :x2 => @config.edge_level + block[:x1] + (col * distance_col) + distance_col + ((col % 2 == 1) ? 0 : 1),
+                        :y2 => @config.edge_level + block[:y1] + (lin * distance_lin) + distance_lin + ((lin % 2 == 1) ? 0 : 1),
                         :line => lin + 1 }
           end
         end
