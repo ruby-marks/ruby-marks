@@ -326,7 +326,7 @@ module RubyMarks
       blocks.tap do |blocks|
         block_width  = RubyMarks::ImageUtils.calc_width(block[:x1], block[:x2])
         block_height = RubyMarks::ImageUtils.calc_height(block[:y1], block[:y2])
-        lines  = @config.default_expected_lines
+        lines   = group.expected_lines
         columns = @config.default_marks_options.size
         distance_lin = @config.default_mark_height
         distance_col = @config.default_mark_width
