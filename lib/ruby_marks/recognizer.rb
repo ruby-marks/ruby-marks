@@ -281,27 +281,35 @@ module RubyMarks
             found_blocks << block
             
             block[:width]  = RubyMarks::ImageUtils.calc_width(block[:x1], block[:x2]) 
-            block[:height] = RubyMarks::ImageUtils.calc_height(block[:y1], block[:y2])                       
+            block[:height] = RubyMarks::ImageUtils.calc_height(block[:y1], block[:y2])  
 
             if @config.scan_mode == :grid
-              if block[:width] >= expected_width + group.block_width_tolerance
-                ajust_width = block[:width] - expected_width 
-                if @config.auto_ajust_block_width == :left
-                  block[:x2] = (block[:x2] - ajust_width) + @config.edge_level
-                  block[:width] = expected_width + @config.edge_level
-                elsif @config.auto_ajust_block_width == :right
-                  block[:x1] = (block[:x1] + ajust_width) - @config.edge_level
-                  block[:width] = expected_width + @config.edge_level
+              unless block[:width] <= (expected_width + group.block_width_tolerance) && block[:width] >= (expected_width - group.block_width_tolerance)
+                if block[:width] > expected_width + group.block_width_tolerance
+                  ajust_width = block[:width] - expected_width 
+                  if @config.auto_ajust_block_width == :left
+                    block[:x2] = (block[:x2] - ajust_width) + @config.edge_level
+                    block[:width] = expected_width + @config.edge_level
+                  elsif @config.auto_ajust_block_width == :right
+                    block[:x1] = (block[:x1] + ajust_width) - @config.edge_level
+                    block[:width] = expected_width + @config.edge_level
+                  end
+                else
+                  block[:width] = 0
                 end
               end
-              if block[:height] > expected_height 
-                ajust_width = block[:height] - expected_height
-                if @config.auto_ajust_block_height == :top
-                  block[:y2] = (block[:y2] - ajust_height) + @config.edge_level
-                  block[:height] = expected_height + @config.edge_level
-                elsif @config.auto_ajust_block_height == :bottom
-                  block[:y1] = (block[:y1] + ajust_height) - @config.edge_level
-                  block[:height] = expected_height + @config.edge_level
+              unless block[:height] <= (expected_height + group.block_height_tolerance) && block[:height] >= (expected_height - group.block_height_tolerance)
+                if block[:height] > expected_height + group.block_height_tolerance
+                  ajust_width = block[:height] - expected_height
+                  if @config.auto_ajust_block_height == :top
+                    block[:y2] = (block[:y2] - ajust_height) + @config.edge_level
+                    block[:height] = expected_height + @config.edge_level
+                  elsif @config.auto_ajust_block_height == :bottom
+                    block[:y1] = (block[:y1] + ajust_height) - @config.edge_level
+                    block[:height] = expected_height + @config.edge_level
+                  end
+                else
+                  block[:height] = 0
                 end
               end
             end
@@ -311,7 +319,6 @@ module RubyMarks
 
             return block if block_width_with_tolerance >= expected_width && 
                             block_height_with_tolerance >= expected_height
-
           end
         end
 
@@ -328,16 +335,23 @@ module RubyMarks
         block_height = RubyMarks::ImageUtils.calc_height(block[:y1], block[:y2])
         lines   = group.expected_lines
         columns = @config.default_marks_options.size
-        distance_lin = @config.default_mark_height
-        distance_col = @config.default_mark_width
+        distance_lin = (block_width / columns).ceil #@config.default_mark_height
+        distance_col = (block_height / lines).ceil #@config.default_mark_width
         lines.times do |lin|
           columns.times do |col|
 
+            blocks << { :x1 => block[:x1] + (col * distance_col), 
+                        :y1 => block[:y1] + (lin * distance_lin), 
+                        :x2 => block[:x1] + (col * distance_col) + distance_col,
+                        :y2 => block[:y1] + (lin * distance_lin) + distance_lin,
+                        :line => lin + 1 }
+=begin
             blocks << { :x1 => @config.edge_level + block[:x1] + (col * distance_col) + ((col % 2 == 1) ? 0 : 1), 
                         :y1 => @config.edge_level + block[:y1] + (lin * distance_lin) + ((lin % 2 == 1) ? 0 : 1), 
                         :x2 => @config.edge_level + block[:x1] + (col * distance_col) + distance_col + ((col % 2 == 1) ? 0 : 1),
                         :y2 => @config.edge_level + block[:y1] + (lin * distance_lin) + distance_lin + ((lin % 2 == 1) ? 0 : 1),
                         :line => lin + 1 }
+=end
           end
         end
       end    
@@ -496,7 +510,7 @@ module RubyMarks
     def add_mark(file, position, mark=nil)
       dr = Magick::Draw.new
       if @config.scan_mode == :grid
-        dr.annotate(file, 0, 0, position[:x]-9, position[:y]+5, mark.intensity.ceil.to_s) do
+        dr.annotate(file, 0, 0, position[:x]-9, position[:y]+5, mark.intensity ? mark.intensity.ceil.to_s : '+' ) do
           self.pointsize = 15
           self.fill = RubyMarks::COLORS[2]
         end
