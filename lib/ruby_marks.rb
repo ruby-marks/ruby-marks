@@ -68,9 +68,36 @@ module RubyMarks
   ]
 end
 
+class Array
+  def to_ranges
+    compact.sort.uniq.inject([]) do |r,x|
+      r.empty? || r.last.last.succ != x ? r << [x,x] : r[0..-2] << [r.last.first, x]
+    end
+  end
+
+  def max_frequency
+    group_by{ |w| w }
+    .map{ |w, v| [w, v.size] }
+    .max { |a, b| a[1] <=> b[1] }
+  end
+end
+
+class Hash
+  def find_mesure(measure, tolerance)
+    ax = []
+    each do |k, v|
+      max = v.max { |a, b| a <=> b }
+      min = v.min { |a, b| a <=> b }
+      ax << [min, max] if max - min >= measure - tolerance && max - min <= measure + tolerance 
+    end
+    ax  
+  end
+end
+
 require 'ruby_marks/config'
 require 'ruby_marks/group'
 require 'ruby_marks/image_utils'
 require 'ruby_marks/mark'
 require 'ruby_marks/recognizer'
 require 'ruby_marks/watcher'
+require 'ruby_marks/flood_scan'

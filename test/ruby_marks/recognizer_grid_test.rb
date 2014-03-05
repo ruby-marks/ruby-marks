@@ -5,15 +5,13 @@ class RubyMarks::RecognizerGridTest < Test::Unit::TestCase
   def setup 
     @file = 'assets/sheet_demo_grid.png'
     @recognizer = RubyMarks::Recognizer.new
-    @positions = {}
-    @positions[:marked_position] = {x: 161, y: 794}
-    @positions[:unmarked_position] = {x: 161, y: 994}
 
     @recognizer.configure do |config|  
     
       config.scan_mode = :grid
+      config.edge_level = 4
       config.default_expected_lines = 5
-      config.intensity_percentual = 50
+      config.intensity_percentual = 45
       config.default_mark_height = 25
       config.default_mark_width = 25
       config.auto_ajust_block_width = :right
@@ -24,24 +22,26 @@ class RubyMarks::RecognizerGridTest < Test::Unit::TestCase
       end
 
       config.define_group :dois do |group|
-        group.expected_coordinates = {x1: 350, y1: 200, x2: 475, y2: 350}
+        group.expected_coordinates = {x1: 350, y1: 235, x2: 475, y2: 360}
       end
 
       config.define_group :tres do |group|
-        group.expected_coordinates = {x1: 570, y1: 200, x2: 695, y2: 350}
+        group.expected_coordinates = {x1: 570, y1: 235, x2: 695, y2: 360}
       end
 
       config.define_group :quatro do |group|
-        group.expected_coordinates = {x1: 790, y1: 200, x2: 915, y2: 350}
+        group.expected_coordinates = {x1: 790, y1: 235, x2: 915, y2: 360}
       end
 
       config.define_group :cinco do |group|
-        group.expected_coordinates = {x1: 1010, y1: 200, x2: 1135, y2: 350}
+        group.expected_coordinates = {x1: 1010, y1: 235, x2: 1135, y2: 360}
       end
     end
 
     @recognizer.file = @file
 
+    file = @recognizer.file
+    file.write("sheet_demo_grid3.png")
   end
 
   def test_should_return_the_recognizer_with_all_marks_flagged
@@ -98,4 +98,5 @@ class RubyMarks::RecognizerGridTest < Test::Unit::TestCase
     result.delete_if { |group, lines| lines.empty? }
     assert_equal expected_hash, result 
   end
+
 end

@@ -119,26 +119,48 @@ module RubyMarks
     end
 
 
-    def detect_groups    
-      file_str = RubyMarks::ImageUtils.export_file_to_str(@file)
-      original_file_str = RubyMarks::ImageUtils.export_file_to_str(@original_file)
-      incorrect_bubble_line_found = Hash.new { |hash, key| hash[key] = [] }
-      bubbles_adjusted = []
-      incorrect_expected_lines = false
-
-      @groups.each_pair do |label, group|
-        next unless group.expected_coordinates.any?
-
-        line = 0
-        group_center = RubyMarks::ImageUtils.image_center(group.expected_coordinates)
-
-        block = find_block_marks(file_str, group_center[:x], group_center[:y], group)
-        if block
-          group.coordinates = {x1: block[:x1], x2: block[:x2], y1: block[:y1], y2: block[:y2]}
+    def detect_groups
+      if @config.scan_mode == :grid
+        scaner = RubyMarks::FloodScan.new
+        @groups.each_pair do |label, group|
+          group_center = RubyMarks::ImageUtils.image_center(group.expected_coordinates)
+          x = group_center[:x]
+          y = group_center[:y]
+          width = RubyMarks::ImageUtils.calc_width(group.expected_coordinates[:x1], group.expected_coordinates[:x2])
+          height = RubyMarks::ImageUtils.calc_height(group.expected_coordinates[:y1], group.expected_coordinates[:y2])
           
-          if @config.scan_mode == :grid
+          block = scaner.scan(@file.dup, Magick::Point.new(x, y), width, height)
+          if block
+            group.coordinates = {x1: block[:x1], x2: block[:x2], y1: block[:y1], y2: block[:y2]}
             marks_blocks = find_marks_grid(group)
-          else
+            marks_blocks.each do |mark|
+              mark_width  = RubyMarks::ImageUtils.calc_width(mark[:x1], mark[:x2])
+              mark_height = RubyMarks::ImageUtils.calc_height(mark[:y1], mark[:y2])
+              mark_file = @original_file.crop(mark[:x1], mark[:y1], mark_width, mark_height)
+              o_mark = RubyMarks::Mark.new group: group, 
+                                           coordinates: {x1: mark[:x1], y1: mark[:y1], x2: mark[:x2], y2: mark[:y2]},
+                                           image_str: RubyMarks::ImageUtils.export_file_to_str(mark_file),
+                                           line: mark[:line]
+              group.marks[mark[:line]] << o_mark
+            end            
+          end
+        end
+      else
+        file_str = RubyMarks::ImageUtils.export_file_to_str(@file)
+        original_file_str = RubyMarks::ImageUtils.export_file_to_str(@original_file)
+        incorrect_bubble_line_found = Hash.new { |hash, key| hash[key] = [] }
+        bubbles_adjusted = []
+        incorrect_expected_lines = false
+
+        @groups.each_pair do |label, group|
+          next unless group.expected_coordinates.any?
+
+          line = 0
+          group_center = RubyMarks::ImageUtils.image_center(group.expected_coordinates)
+
+          block = find_block_marks(file_str, group_center[:x], group_center[:y], group)
+          if block
+            group.coordinates = {x1: block[:x1], x2: block[:x2], y1: block[:y1], y2: block[:y2]}
             marks_blocks = find_marks(original_file_str, group)
             marks_blocks.sort!{ |a,b| a[:y1] <=> b[:y1] }
             mark_ant = nil
@@ -237,33 +259,32 @@ module RubyMarks
               end
             
             end
-          end
 
-          marks_blocks.each do |mark|
-            mark_width  = RubyMarks::ImageUtils.calc_width(mark[:x1], mark[:x2])
-            mark_height = RubyMarks::ImageUtils.calc_height(mark[:y1], mark[:y2])
-            mark_file = @original_file.crop(mark[:x1], mark[:y1], mark_width, mark_height)
-            o_mark = RubyMarks::Mark.new group: group, 
-                                         coordinates: {x1: mark[:x1], y1: mark[:y1], x2: mark[:x2], y2: mark[:y2]},
-                                         image_str: RubyMarks::ImageUtils.export_file_to_str(mark_file),
-                                         line: mark[:line]
-            group.marks[mark[:line]] << o_mark
-          end
-
-          incorrect_expected_lines = group.incorrect_expected_lines
-
-          group.marks.each_pair do |line, marks|
-            if marks.count != group.marks_options.count 
-              incorrect_bubble_line_found[group.label.to_sym] << line
+            marks_blocks.each do |mark|
+              mark_width  = RubyMarks::ImageUtils.calc_width(mark[:x1], mark[:x2])
+              mark_height = RubyMarks::ImageUtils.calc_height(mark[:y1], mark[:y2])
+              mark_file = @original_file.crop(mark[:x1], mark[:y1], mark_width, mark_height)
+              o_mark = RubyMarks::Mark.new group: group, 
+                                           coordinates: {x1: mark[:x1], y1: mark[:y1], x2: mark[:x2], y2: mark[:y2]},
+                                           image_str: RubyMarks::ImageUtils.export_file_to_str(mark_file),
+                                           line: mark[:line]
+              group.marks[mark[:line]] << o_mark
             end
-          end   
-        end
-      end  
-      @groups_detected = true
-      if incorrect_bubble_line_found.any? || bubbles_adjusted.any? || incorrect_expected_lines 
-        raise_watcher :incorrect_group_watcher, incorrect_expected_lines, incorrect_bubble_line_found, bubbles_adjusted.flatten 
-      end
 
+            incorrect_expected_lines = group.incorrect_expected_lines
+
+            group.marks.each_pair do |line, marks|
+              if marks.count != group.marks_options.count 
+                incorrect_bubble_line_found[group.label.to_sym] << line
+              end
+            end   
+          end
+        end  
+        @groups_detected = true
+        if incorrect_bubble_line_found.any? || bubbles_adjusted.any? || incorrect_expected_lines 
+          raise_watcher :incorrect_group_watcher, incorrect_expected_lines, incorrect_bubble_line_found, bubbles_adjusted.flatten 
+        end
+      end
     end
 
 
@@ -334,9 +355,9 @@ module RubyMarks
         block_width  = RubyMarks::ImageUtils.calc_width(block[:x1], block[:x2])
         block_height = RubyMarks::ImageUtils.calc_height(block[:y1], block[:y2])
         lines   = group.expected_lines
-        columns = @config.default_marks_options.size
-        distance_lin = (block_width / columns).ceil #@config.default_mark_height
-        distance_col = (block_height / lines).ceil #@config.default_mark_width
+        columns = group.marks_options.size
+        distance_lin = (block_height / lines).ceil 
+        distance_col = (block_width / columns).ceil
         lines.times do |lin|
           columns.times do |col|
 
@@ -345,13 +366,6 @@ module RubyMarks
                         :x2 => block[:x1] + (col * distance_col) + distance_col,
                         :y2 => block[:y1] + (lin * distance_lin) + distance_lin,
                         :line => lin + 1 }
-=begin
-            blocks << { :x1 => @config.edge_level + block[:x1] + (col * distance_col) + ((col % 2 == 1) ? 0 : 1), 
-                        :y1 => @config.edge_level + block[:y1] + (lin * distance_lin) + ((lin % 2 == 1) ? 0 : 1), 
-                        :x2 => @config.edge_level + block[:x1] + (col * distance_col) + distance_col + ((col % 2 == 1) ? 0 : 1),
-                        :y2 => @config.edge_level + block[:y1] + (lin * distance_lin) + distance_lin + ((lin % 2 == 1) ? 0 : 1),
-                        :line => lin + 1 }
-=end
           end
         end
       end    
@@ -433,7 +447,7 @@ module RubyMarks
           end        
         rescue Timeout::Error
           raise_watcher :timed_out_watcher
-          return false
+          return file
         end  
 
         @groups.each_pair do |label, group|  

@@ -1,7 +1,7 @@
 require "test_helper"
 
 class RubyMarks::RecognizerTest < Test::Unit::TestCase
-  
+=begin
   def setup 
     @file = 'assets/sheet_demo1.png'
     @recognizer = RubyMarks::Recognizer.new
@@ -42,7 +42,6 @@ class RubyMarks::RecognizerTest < Test::Unit::TestCase
 
   end
 
-=begin
   def test_should_initialize_a_recognizer_with_a_valid_file
     assert_equal @file, @recognizer.filename
   end
