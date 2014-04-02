@@ -4,12 +4,13 @@ module RubyMarks
   class Recognizer
     
     attr_reader   :file, :raised_watchers, :groups, :watchers, :file_str, :original_file_str
-    attr_accessor :config, :groups_detected
+    attr_accessor :config, :groups_detected, :groups_not_detected
 
 
     def initialize
       self.reset_document
-      @groups = {}     
+      @groups = {}
+      @groups_not_detected=Array.new()
       self.create_config
     end
 
@@ -130,7 +131,7 @@ module RubyMarks
           height = RubyMarks::ImageUtils.calc_height(group.expected_coordinates[:y1], group.expected_coordinates[:y2])
           
           block = scaner.scan(@file.dup, Magick::Point.new(x, y), width, height)
-          if block
+          if !block.empty?
             group.coordinates = {x1: block[:x1], x2: block[:x2], y1: block[:y1], y2: block[:y2]}
             marks_blocks = find_marks_grid(group)
             marks_blocks.each do |mark|
@@ -142,7 +143,9 @@ module RubyMarks
                                            image_str: RubyMarks::ImageUtils.export_file_to_str(mark_file),
                                            line: mark[:line]
               group.marks[mark[:line]] << o_mark
-            end            
+            end
+          else
+            @groups_not_detected << group.label
           end
         end
       else
