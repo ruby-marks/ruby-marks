@@ -2,18 +2,18 @@ PATH
   remote: .
   specs:
     ruby_marks (0.4.1)
-      rmagick (= 2.13.1)
+      rmagick (= 2.13.2)
 
 GEM
   remote: https://rubygems.org/
   specs:
     rake (0.9.2.2)
-    rmagick (2.13.1)
+    rmagick (2.13.2)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
   rake
-  rmagick (= 2.13.1)
+  rmagick (= 2.13.2)
   ruby_marks!
