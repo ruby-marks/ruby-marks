@@ -103,7 +103,7 @@ module RubyMarks
           marks = Hash.new { |hash, key| hash[key] = [] }
           group.marks.each_pair do |line, value|
             value.each do |mark|
-              marks[line] << mark.value if mark.marked?
+              marks[line] << mark.value if mark.marked? && mark.value
             end
 
             multiple_marked_found = true if marks[line].size > 1            
@@ -359,8 +359,8 @@ module RubyMarks
         block_height = RubyMarks::ImageUtils.calc_height(block[:y1], block[:y2])
         lines   = group.expected_lines
         columns = group.marks_options.size
-        distance_lin = (block_height / lines).ceil 
-        distance_col = (block_width / columns).ceil
+        distance_lin = group.mark_height
+        distance_col = group.mark_width
         lines.times do |lin|
           columns.times do |col|
 
