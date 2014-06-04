@@ -12,8 +12,8 @@ class RubyMarks::RecognizerGridTest < Test::Unit::TestCase
       config.edge_level = 4
       config.default_expected_lines = 5
       config.intensity_percentual = 45
-      config.default_mark_height = 25
-      config.default_mark_width = 25
+      config.default_mark_height = 26
+      config.default_mark_width = 26
       config.auto_ajust_block_width = :right
       config.default_block_width_tolerance = 10      
       
