@@ -271,7 +271,7 @@ module RubyMarks
                                            coordinates: {x1: mark[:x1], y1: mark[:y1], x2: mark[:x2], y2: mark[:y2]},
                                            image_str: RubyMarks::ImageUtils.export_file_to_str(mark_file),
                                            line: mark[:line]
-              group.marks[mark[:line]] << o_mark
+              group.marks[mark[:line]] << o_mark if mark[:line] <= group.expected_lines
             end
 
             incorrect_expected_lines = group.incorrect_expected_lines
