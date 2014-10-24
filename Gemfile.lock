@@ -62,6 +62,5 @@ DEPENDENCIES
   factory_girl (~> 4.0)
   pry
   rake
-  rmagick (= 2.13.2)
   rspec (~> 3.0)
   ruby_marks!

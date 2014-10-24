@@ -1,33 +1,33 @@
 require "test_helper"
 
 class RubyMarks::RecognizerTest < Test::Unit::TestCase
-=begin
-  def setup 
+
+  def setup
     @file = 'assets/sheet_demo1.png'
     @recognizer = RubyMarks::Recognizer.new
     @positions = {}
     @positions[:marked_position] = {x: 161, y: 794}
     @positions[:unmarked_position] = {x: 161, y: 994}
 
-    @recognizer.configure do |config|  
+    @recognizer.configure do |config|
 
       config.define_group :first  do |group|
         group.expected_coordinates = {x1: 145, y1: 780, x2: 270, y2: 1290}
       end
 
-      config.define_group :second do |group| 
+      config.define_group :second do |group|
         group.expected_coordinates = {x1: 370, y1: 780, x2: 500, y2: 1290}
       end
 
-      config.define_group :third  do |group| 
+      config.define_group :third  do |group|
         group.expected_coordinates = {x1: 595, y1: 780, x2: 720, y2: 1290}
       end
 
-      config.define_group :fourth do |group| 
+      config.define_group :fourth do |group|
         group.expected_coordinates = {x1: 820, y1: 780, x2: 950, y2: 1290}
       end
 
-      config.define_group :fifth  do |group| 
+      config.define_group :fifth  do |group|
         group.expected_coordinates = {x1: 1045, y1: 780, x2: 1170, y2: 1290}
       end
 
@@ -64,7 +64,7 @@ class RubyMarks::RecognizerTest < Test::Unit::TestCase
 
   def test_should_get_the_configuration_defined_in_group
     @recognizer.configure do |config|
-      config.default_marks_options = %w{1 2 3}      
+      config.default_marks_options = %w{1 2 3}
       config.define_group :one do |group|
         group.marks_options = %w{X Y Z}
       end
@@ -83,11 +83,11 @@ class RubyMarks::RecognizerTest < Test::Unit::TestCase
   end
 
   def test_should_recognize_marked_position
-    @recognizer.detect_groups    
+    @recognizer.detect_groups
     group = @recognizer.groups[:first]
     line = group.marks[1]
     mark = line.first
-    assert mark.marked?, "The position wasn't recognized as marked"    
+    assert mark.marked?, "The position wasn't recognized as marked"
   end
 
   def test_should_recognize_not_marked_position
@@ -95,7 +95,7 @@ class RubyMarks::RecognizerTest < Test::Unit::TestCase
     group = @recognizer.groups[:first]
     line = group.marks[2]
     mark = line.first
-    assert mark.unmarked?, "The position wasn't recognized as unmarked"    
+    assert mark.unmarked?, "The position wasn't recognized as unmarked"
   end
 
 
@@ -105,30 +105,30 @@ class RubyMarks::RecognizerTest < Test::Unit::TestCase
 
     temp_filename = "temp_sheet_demo2.png"
     File.delete(temp_filename) if File.exist?(temp_filename)
-    flagged_recognizer.write(temp_filename)    
+    flagged_recognizer.write(temp_filename)
   end
 
 
   def test_should_scan_the_recognizer_and_get_a_hash_of_marked_marks
-    expected_hash = { 
-      first: {  
+    expected_hash = {
+      first: {
         1 => ['A'],
         2 => ['B'],
         3 => ['C'],
         4 => ['D'],
         5 => ['E']
       },
-      second: {  
+      second: {
         1 => ['A'],
         2 => ['B'],
         3 => ['C'],
         4 => ['D'],
         5 => ['E']
       },
-      third: {  
+      third: {
         2 => ['B'],
         3 => ['D'],
-        4 => ['D']       
+        4 => ['D']
       }
     }
     result = @recognizer.scan
@@ -136,13 +136,13 @@ class RubyMarks::RecognizerTest < Test::Unit::TestCase
       lines.delete_if { |line, value| value.empty? }
     end
     result.delete_if { |group, lines| lines.empty? }
-    assert_equal expected_hash, result 
+    assert_equal expected_hash, result
   end
 
 
   def test_should_make_watcher_raise_up
     @file = 'assets/sheet_demo1_invalid.png'
-    @recognizer.file = @file 
+    @recognizer.file = @file
 
     @recognizer.add_watcher :incorrect_group_watcher
 
@@ -151,7 +151,7 @@ class RubyMarks::RecognizerTest < Test::Unit::TestCase
   end
 
 
-  def test_should_make_timeout_watcher_raise_up  
+  def test_should_make_timeout_watcher_raise_up
     @recognizer.configure do |config|
       config.scan_timeout = 1
     end
@@ -161,6 +161,6 @@ class RubyMarks::RecognizerTest < Test::Unit::TestCase
     @recognizer.scan
     assert @recognizer.raised_watchers.include?(:timed_out_watcher)
   end
-=end
+
 end
- 
+
