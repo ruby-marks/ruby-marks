@@ -7,26 +7,22 @@ module RubyMarks
       x2.to_i - x1.to_i + 1
     end
 
-
     def self.calc_height(y1, y2)
       y2.to_i - y1.to_i + 1
     end
-
 
     def self.calc_middle_horizontal(x, width)
       x.to_i + width.to_i / 2
     end
 
-
     def self.calc_middle_vertical(y, height)
       y.to_i + height.to_i / 2
-    end   
-
+    end
 
     def self.image_center(coordinates)
       width  = self.calc_width(coordinates[:x1], coordinates[:x2])
       height = self.calc_height(coordinates[:y1], coordinates[:y2])
-      
+
       x = self.calc_middle_horizontal(coordinates[:x1], width)
       y = self.calc_middle_vertical(coordinates[:y1], height)
       return {x: x, y: y}
@@ -39,7 +35,7 @@ module RubyMarks
       result_mask.tap do |result_mask|
         process_queue =  Hash.new { |hash, key| hash[key] = [] }
         process_line = true
-        
+
         loop do
 
           break if y > coordinates[:y2] - 1 || y < coordinates[:y1]
@@ -49,10 +45,10 @@ module RubyMarks
             current_x = x
             loop do
               position = image[y][current_x]
-              
-              break if position != character || current_x - 1 <= coordinates[:x1]         
-              process_queue[y] << current_x unless process_queue[y].include?(current_x) || result_mask[y].include?(current_x) 
-              result_mask[y] << current_x unless result_mask[y].include?(current_x)            
+
+              break if position != character || current_x - 1 <= coordinates[:x1]
+              process_queue[y] << current_x unless process_queue[y].include?(current_x) || result_mask[y].include?(current_x)
+              result_mask[y] << current_x unless result_mask[y].include?(current_x)
               current_x = current_x - 1
             end
 
@@ -60,8 +56,8 @@ module RubyMarks
             loop do
               position = image[y][current_x]
 
-              break if position != character || current_x + 1 >= coordinates[:x2]       
-              process_queue[y] << current_x unless process_queue[y].include?(current_x) || result_mask[y].include?(current_x)              
+              break if position != character || current_x + 1 >= coordinates[:x2]
+              process_queue[y] << current_x unless process_queue[y].include?(current_x) || result_mask[y].include?(current_x)
               result_mask[y] << current_x unless result_mask[y].include?(current_x)
               current_x = current_x + 1
             end
@@ -87,7 +83,7 @@ module RubyMarks
 
           next if reset_process
 
-          process_queue[y].each do |element|         
+          process_queue[y].each do |element|
             if y + 1 <= coordinates[:y2]
               position = image[y+1] && image[y+1][element]
 
@@ -99,7 +95,7 @@ module RubyMarks
               else
                 process_queue[y].delete(element)
               end
-                    
+
             end
           end
 
@@ -131,16 +127,16 @@ module RubyMarks
       image = image.gsub!(Regexp.new('\xFF\xFF\xFF', nil, 'n'), " ,") if image
       image = image.gsub!(Regexp.new('\x00\x00\x00', nil, 'n'), ".,") if image
       image = image.split(',') if image
-      image = image.each_slice(file.page.width).to_a  if image 
+      image = image.each_slice(file.page.width).to_a  if image
     end
 
-    
-    private 
+
+    private
     def self.get_hex_from_color(color)
       color = color.to_s(16)[0..1]
       color.size < 2 ? "0#{color}" : color
     end
- 
+
   end
 
 end
