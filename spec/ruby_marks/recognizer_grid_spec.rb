@@ -1,6 +1,5 @@
 require "spec_helper"
 
-
 describe RubyMarks::Recognizer do
   subject { described_class.new }
   let(:file) { fixture_path('grid.png') }
