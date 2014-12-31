@@ -43,7 +43,7 @@ describe RubyMarks::Recognizer do
   describe "#flag_all_marks" do
     let(:expected_file) { subject.flag_all_marks }
 
-    it { expect(expected_file.class).to be_a(Magick::Image) }
+    it { expect(expected_file.class).to eq(Magick::Image) }
   end
 
   describe "#scan" do
