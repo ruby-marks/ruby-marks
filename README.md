@@ -5,7 +5,7 @@ Ruby Marks
 [![Code Climate](https://codeclimate.com/github/andrerpbts/ruby_marks/badges/gpa.svg)](https://codeclimate.com/github/andrerpbts/ruby_marks)
 [![Test Coverage](https://codeclimate.com/github/andrerpbts/ruby_marks/badges/coverage.svg)](https://codeclimate.com/github/andrerpbts/ruby_marks)
 
-A simple OMR ([Optical Mark Recognition](http://en.wikipedia.org/wiki/Optical_mark_recognition)) gem for ruby 1.9.x.
+A simple OMR ([Optical Mark Recognition](http://en.wikipedia.org/wiki/Optical_mark_recognition)) gem for ruby.
 
 
 Requirements
@@ -36,9 +36,9 @@ On Ubuntu, the `apt-get` should be enough:
 Supported versions
 ------------------
 
-* Ruby 1.9.2
 * Ruby 1.9.3
-
+* Ruby 2.0.x
+* Ruby 2.1.x
 
 Install
 -------
