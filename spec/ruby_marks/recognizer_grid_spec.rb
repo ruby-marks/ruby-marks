@@ -16,23 +16,23 @@ describe RubyMarks::Recognizer do
       config.auto_ajust_block_width = :right
       config.default_block_width_tolerance = 10
 
-      config.define_group :um do |group|
+      config.define_group :one do |group|
         group.expected_coordinates = {x1: 160, y1: 235, x2: 285, y2: 360}
       end
 
-      config.define_group :dois do |group|
+      config.define_group :two do |group|
         group.expected_coordinates = {x1: 350, y1: 235, x2: 475, y2: 360}
       end
 
-      config.define_group :tres do |group|
+      config.define_group :three do |group|
         group.expected_coordinates = {x1: 570, y1: 235, x2: 695, y2: 360}
       end
 
-      config.define_group :quatro do |group|
+      config.define_group :four do |group|
         group.expected_coordinates = {x1: 790, y1: 235, x2: 915, y2: 360}
       end
 
-      config.define_group :cinco do |group|
+      config.define_group :five do |group|
         group.expected_coordinates = {x1: 1010, y1: 235, x2: 1135, y2: 360}
       end
     end
@@ -49,11 +49,11 @@ describe RubyMarks::Recognizer do
   describe "#scan" do
     let(:expected_hash) do
       {
-        um:     { 1 => ['A'], 2 => ['A'], 3 => ['D'], 4 => ['B'], 5 => ['B'] },
-        dois:   { 1 => ['B'], 2 => ['A'], 3 => ['A'], 4 => ['A'], 5 => ['D'] },
-        tres:   { 1 => ['A'], 2 => ['B'], 3 => ['A'], 4 => ['A'], 5 => ['D'] },
-        quatro: { 1 => ['B'], 2 => ['D'], 3 => ['A'], 4 => ['C'], 5 => ['C'] },
-        cinco:  { 1 => ['C'], 2 => ['D'], 3 => ['A'], 4 => ['C'], 5 => ['C'] }
+        one:   { 1 => ['A'], 2 => ['A'], 3 => ['D'], 4 => ['B'], 5 => ['B'] },
+        two:   { 1 => ['B'], 2 => ['A'], 3 => ['A'], 4 => ['A'], 5 => ['D'] },
+        three: { 1 => ['A'], 2 => ['B'], 3 => ['A'], 4 => ['A'], 5 => ['D'] },
+        four:  { 1 => ['B'], 2 => ['D'], 3 => ['A'], 4 => ['C'], 5 => ['C'] },
+        five:  { 1 => ['C'], 2 => ['D'], 3 => ['A'], 4 => ['C'], 5 => ['C'] }
       }
     end
 
