@@ -1,8 +1,8 @@
 #encoding: utf-8
 module RubyMarks
-  
+
   class Recognizer
-    
+
     attr_reader   :file, :raised_watchers, :groups, :watchers, :file_str, :original_file_str
     attr_accessor :config, :groups_detected, :groups_not_detected
 
@@ -23,8 +23,8 @@ module RubyMarks
       @original_file_str = nil
 
       @file = Magick::Image.read(file).first
-      @file = @file.quantize(256, Magick::GRAYColorspace)     
-      @file = @file.threshold(@config.calculated_threshold_level) 
+      @file = @file.quantize(256, Magick::GRAYColorspace)
+      @file = @file.threshold(@config.calculated_threshold_level)
       @original_file = @file
       @file = @file.edge(@config.edge_level)
       @groups_detected = false
@@ -32,15 +32,15 @@ module RubyMarks
       @groups.each_pair do |label, group|
         group.marks = nil
         group.marks = Hash.new { |hash, key| hash[key] = [] }
-      end        
+      end
     end
-    
+
 
     def reset_document
       @current_position = {x: 0, y: 0}
       @clock_marks = []
       @raised_watchers = {}
-      @watchers = {} 
+      @watchers = {}
     end
 
 
@@ -56,7 +56,7 @@ module RubyMarks
 
     def configure(&block)
       self.create_config
-      @config.configure(&block) 
+      @config.configure(&block)
     end
 
 
@@ -75,7 +75,7 @@ module RubyMarks
       watcher = @watchers[name]
       if watcher
         @raised_watchers[watcher.name] ||= 0
-        @raised_watchers[watcher.name]  += 1 
+        @raised_watchers[watcher.name]  += 1
         watcher.run(*args)
       end
     end
@@ -83,54 +83,53 @@ module RubyMarks
 
     def scan
       raise IOError, "There's a invalid or missing file" if @file.nil?
-      
+
       unmarked_group_found  = false
       multiple_marked_found = false
 
       result = Hash.new { |hash, key| hash[key] = [] }
       result.tap do |result|
- 
-        begin 
+
+        begin
           Timeout.timeout(@config.scan_timeout) do
-            self.detect_groups unless @groups_detected 
-          end        
+            self.detect_groups unless @groups_detected
+          end
         rescue Timeout::Error
           raise_watcher :timed_out_watcher
           return result
-        end       
+        end
 
-        @groups.each_pair do |label, group|        
+        @groups.each_pair do |label, group|
           marks = Hash.new { |hash, key| hash[key] = [] }
           group.marks.each_pair do |line, value|
             value.each do |mark|
               marks[line] << mark.value if mark.marked? && mark.value
             end
 
-            multiple_marked_found = true if marks[line].size > 1            
+            multiple_marked_found = true if marks[line].size > 1
             unmarked_group_found  = true if marks[line].empty?
           end
 
-          result[group.label.to_sym] = marks 
+          result[group.label.to_sym] = marks
         end
 
         raise_watcher :scan_unmarked_watcher, result if unmarked_group_found
-        raise_watcher :scan_multiple_marked_watcher, result if multiple_marked_found    
-        raise_watcher :scan_mark_watcher, result, unmarked_group_found, multiple_marked_found if unmarked_group_found || multiple_marked_found    
+        raise_watcher :scan_multiple_marked_watcher, result if multiple_marked_found
+        raise_watcher :scan_mark_watcher, result, unmarked_group_found, multiple_marked_found if unmarked_group_found || multiple_marked_found
       end
     end
 
 
     def detect_groups
       if @config.scan_mode == :grid
-        scaner = RubyMarks::FloodScan.new
+        scanner = RubyMarks::FloodScan.new(@file.dup)
         @groups.each_pair do |label, group|
           group_center = RubyMarks::ImageUtils.image_center(group.expected_coordinates)
           x = group_center[:x]
           y = group_center[:y]
           width = RubyMarks::ImageUtils.calc_width(group.expected_coordinates[:x1], group.expected_coordinates[:x2])
           height = RubyMarks::ImageUtils.calc_height(group.expected_coordinates[:y1], group.expected_coordinates[:y2])
-          
-          block = scaner.scan(@file.dup, Magick::Point.new(x, y), width, height)
+          block = scanner.scan(Magick::Point.new(x, y), width, height)
           if !block.empty?
             group.coordinates = {x1: block[:x1], x2: block[:x2], y1: block[:y1], y2: block[:y2]}
             marks_blocks = find_marks_grid(group)
@@ -138,7 +137,7 @@ module RubyMarks
               mark_width  = RubyMarks::ImageUtils.calc_width(mark[:x1], mark[:x2])
               mark_height = RubyMarks::ImageUtils.calc_height(mark[:y1], mark[:y2])
               mark_file = @original_file.crop(mark[:x1], mark[:y1], mark_width, mark_height)
-              o_mark = RubyMarks::Mark.new group: group, 
+              o_mark = RubyMarks::Mark.new group: group,
                                            coordinates: {x1: mark[:x1], y1: mark[:y1], x2: mark[:x2], y2: mark[:y2]},
                                            image_str: RubyMarks::ImageUtils.export_file_to_str(mark_file),
                                            line: mark[:line]
@@ -171,7 +170,7 @@ module RubyMarks
               mark_width  = RubyMarks::ImageUtils.calc_width(mark[:x1], mark[:x2])
               mark_height = RubyMarks::ImageUtils.calc_height(mark[:y1], mark[:y2])
 
-              if mark_width  >= group.mark_width_with_down_tolerance  && 
+              if mark_width  >= group.mark_width_with_down_tolerance  &&
                  mark_height >= group.mark_height_with_down_tolerance
 
                 mark_positions = mark[:y1]-10..mark[:y1]+10
@@ -193,10 +192,10 @@ module RubyMarks
                   mark[:conflict] = true
                   mark[:conflicting_mark] = mark_ant
                 else
-                  mark_ant = mark  
+                  mark_ant = mark
                 end
               else
-                mark_ant = mark  
+                mark_ant = mark
               end
             end
             marks_blocks.delete_if { |m| m[:conflict] }
@@ -241,9 +240,9 @@ module RubyMarks
                     next_mark = marks[index + 1]
                     distance = 0
                     distance = next_mark[:x1] - current_mark[:x1] if next_mark
-                    if distance > group.distance_between_marks + 10 || 
-                       next_mark.nil? && index + 1 < group.marks_options.count 
-                      
+                    if distance > group.distance_between_marks + 10 ||
+                       next_mark.nil? && index + 1 < group.marks_options.count
+
                       new_x1 = current_mark[:x1] + group.distance_between_marks
                       new_mark = {x1: new_x1,
                                   x2: new_x1 + group.mark_width,
@@ -255,19 +254,19 @@ module RubyMarks
                       bubbles_adjusted << new_mark
                       reprocess = true
                       break
-                    end                  
+                    end
                   end
                   break unless reprocess
                 end
               end
-            
+
             end
 
             marks_blocks.each do |mark|
               mark_width  = RubyMarks::ImageUtils.calc_width(mark[:x1], mark[:x2])
               mark_height = RubyMarks::ImageUtils.calc_height(mark[:y1], mark[:y2])
               mark_file = @original_file.crop(mark[:x1], mark[:y1], mark_width, mark_height)
-              o_mark = RubyMarks::Mark.new group: group, 
+              o_mark = RubyMarks::Mark.new group: group,
                                            coordinates: {x1: mark[:x1], y1: mark[:y1], x2: mark[:x2], y2: mark[:y2]},
                                            image_str: RubyMarks::ImageUtils.export_file_to_str(mark_file),
                                            line: mark[:line]
@@ -277,15 +276,15 @@ module RubyMarks
             incorrect_expected_lines = group.incorrect_expected_lines
 
             group.marks.each_pair do |line, marks|
-              if marks.count != group.marks_options.count 
+              if marks.count != group.marks_options.count
                 incorrect_bubble_line_found[group.label.to_sym] << line
               end
-            end   
+            end
           end
-        end  
+        end
         @groups_detected = true
-        if incorrect_bubble_line_found.any? || bubbles_adjusted.any? || incorrect_expected_lines 
-          raise_watcher :incorrect_group_watcher, incorrect_expected_lines, incorrect_bubble_line_found, bubbles_adjusted.flatten 
+        if incorrect_bubble_line_found.any? || bubbles_adjusted.any? || incorrect_expected_lines
+          raise_watcher :incorrect_group_watcher, incorrect_expected_lines, incorrect_bubble_line_found, bubbles_adjusted.flatten
         end
       end
     end
@@ -295,22 +294,22 @@ module RubyMarks
       expected_coordinates = group.expected_coordinates
       found_blocks = []
       expected_width  = RubyMarks::ImageUtils.calc_width(expected_coordinates[:x1], expected_coordinates[:x2])
-      expected_height = RubyMarks::ImageUtils.calc_height(expected_coordinates[:y1], expected_coordinates[:y2]) 
+      expected_height = RubyMarks::ImageUtils.calc_height(expected_coordinates[:y1], expected_coordinates[:y2])
       block = nil
       while x <= expected_coordinates[:x2] && y <= expected_coordinates[:y2]
         if image[y] && image[y][x] == " "
           block = find_in_blocks(found_blocks, x, y)
-          unless block       
+          unless block
             block = find_block(image, x, y)
             found_blocks << block
-            
-            block[:width]  = RubyMarks::ImageUtils.calc_width(block[:x1], block[:x2]) 
-            block[:height] = RubyMarks::ImageUtils.calc_height(block[:y1], block[:y2])  
+
+            block[:width]  = RubyMarks::ImageUtils.calc_width(block[:x1], block[:x2])
+            block[:height] = RubyMarks::ImageUtils.calc_height(block[:y1], block[:y2])
 
             if @config.scan_mode == :grid
               unless block[:width] <= (expected_width + group.block_width_tolerance) && block[:width] >= (expected_width - group.block_width_tolerance)
                 if block[:width] > expected_width + group.block_width_tolerance
-                  ajust_width = block[:width] - expected_width 
+                  ajust_width = block[:width] - expected_width
                   if @config.auto_ajust_block_width == :left
                     block[:x2] = (block[:x2] - ajust_width) + @config.edge_level
                     block[:width] = expected_width + @config.edge_level
@@ -341,12 +340,12 @@ module RubyMarks
             block_width_with_tolerance  = block[:width]  + group.block_width_tolerance
             block_height_with_tolerance = block[:height] + group.block_height_tolerance
 
-            return block if block_width_with_tolerance >= expected_width && 
+            return block if block_width_with_tolerance >= expected_width &&
                             block_height_with_tolerance >= expected_height
           end
         end
 
-        x += 1 
+        x += 1
         y += 1
       end
     end
@@ -364,14 +363,14 @@ module RubyMarks
         lines.times do |lin|
           columns.times do |col|
 
-            blocks << { :x1 => block[:x1] + (col * distance_col), 
-                        :y1 => block[:y1] + (lin * distance_lin), 
+            blocks << { :x1 => block[:x1] + (col * distance_col),
+                        :y1 => block[:y1] + (lin * distance_lin),
                         :x2 => block[:x1] + (col * distance_col) + distance_col,
                         :y2 => block[:y1] + (lin * distance_lin) + distance_lin,
                         :line => lin + 1 }
           end
         end
-      end    
+      end
     end
 
     def find_marks(image, group)
@@ -381,10 +380,10 @@ module RubyMarks
       blocks.tap do |blocks|
         while y < block[:y2]
           x = block[:x1]
-          while x < block[:x2] do          
+          while x < block[:x2] do
             if image[y][x] == " "
               x += 1
-              next 
+              next
             end
 
             result = find_in_blocks(blocks, x, y)
@@ -395,7 +394,7 @@ module RubyMarks
               mark_height = RubyMarks::ImageUtils.calc_height(result[:y1], result[:y2])
 
 
-              if mark_width > group.mark_width_with_up_tolerance  
+              if mark_width > group.mark_width_with_up_tolerance
                 distance_x1 = x - result[:x1]
                 distance_x2 = result[:x2] - x
                 if distance_x1 <= distance_x2
@@ -403,16 +402,16 @@ module RubyMarks
                 else
                   result[:x1] = result[:x2] - group.mark_width
                 end
-              end            
-              
-              if mark_height > group.mark_height_with_up_tolerance  
+              end
+
+              if mark_height > group.mark_height_with_up_tolerance
                 distance_y1 = y - result[:y1]
                 distance_y2 = result[:y2] - y
                 if distance_y1 <= distance_y2
                   result[:y2] = result[:y1] + group.mark_height
                 else
                   result[:y1] = result[:y2] - group.mark_height
-                end           
+                end
               end
 
               blocks << result unless blocks.any? { |b| b == result }
@@ -439,39 +438,39 @@ module RubyMarks
 
     def flag_all_marks
       raise IOError, "There's a invalid or missing file" if @file.nil?
-      
+
       file = @original_file.dup
 
       file.tap do |file|
 
-        begin 
+        begin
           Timeout.timeout(@config.scan_timeout) do
-            self.detect_groups unless @groups_detected 
-          end        
+            self.detect_groups unless @groups_detected
+          end
         rescue Timeout::Error
           raise_watcher :timed_out_watcher
           return file
-        end  
+        end
 
-        @groups.each_pair do |label, group|  
+        @groups.each_pair do |label, group|
 
           dr = Magick::Draw.new
           dr.stroke_width = 5
           dr.stroke(RubyMarks::COLORS[3])
           dr.line(group.expected_coordinates[:x1], group.expected_coordinates[:y1], group.expected_coordinates[:x2], group.expected_coordinates[:y1])
           dr.line(group.expected_coordinates[:x2], group.expected_coordinates[:y1], group.expected_coordinates[:x2], group.expected_coordinates[:y2])
-          dr.line(group.expected_coordinates[:x2], group.expected_coordinates[:y2], group.expected_coordinates[:x1], group.expected_coordinates[:y2])  
-          dr.line(group.expected_coordinates[:x1], group.expected_coordinates[:y2], group.expected_coordinates[:x1], group.expected_coordinates[:y1])                  
+          dr.line(group.expected_coordinates[:x2], group.expected_coordinates[:y2], group.expected_coordinates[:x1], group.expected_coordinates[:y2])
+          dr.line(group.expected_coordinates[:x1], group.expected_coordinates[:y2], group.expected_coordinates[:x1], group.expected_coordinates[:y1])
           dr.draw(file)
 
-          if group.coordinates 
+          if group.coordinates
             dr = Magick::Draw.new
             dr.stroke_width = 5
-            dr.stroke(RubyMarks::COLORS[5])         
+            dr.stroke(RubyMarks::COLORS[5])
             dr.line(group.coordinates[:x1], group.coordinates[:y1], group.coordinates[:x2], group.coordinates[:y1])
             dr.line(group.coordinates[:x2], group.coordinates[:y1], group.coordinates[:x2], group.coordinates[:y2])
-            dr.line(group.coordinates[:x2], group.coordinates[:y2], group.coordinates[:x1], group.coordinates[:y2])  
-            dr.line(group.coordinates[:x1], group.coordinates[:y2], group.coordinates[:x1], group.coordinates[:y1])                  
+            dr.line(group.coordinates[:x2], group.coordinates[:y2], group.coordinates[:x1], group.coordinates[:y2])
+            dr.line(group.coordinates[:x1], group.coordinates[:y2], group.coordinates[:x1], group.coordinates[:y1])
             dr.draw(file)
           end
 
@@ -481,7 +480,7 @@ module RubyMarks
               mark_width  = RubyMarks::ImageUtils.calc_width(mark.coordinates[:x1], mark.coordinates[:x2])
               mark_height = RubyMarks::ImageUtils.calc_height(mark.coordinates[:y1], mark.coordinates[:y2])
               mark_file = @original_file.crop(mark.coordinates[:x1], mark.coordinates[:y1], mark_width, mark_height)
-              o_mark = RubyMarks::Mark.new group: group, 
+              o_mark = RubyMarks::Mark.new group: group,
                                            coordinates: {x1: mark.coordinates[:x1], y1: mark.coordinates[:y1], x2: mark.coordinates[:x2], y2: mark.coordinates[:y2]},
                                            image_str: RubyMarks::ImageUtils.export_file_to_str(mark_file),
                                            line: line
@@ -489,7 +488,7 @@ module RubyMarks
               add_mark file, RubyMarks::ImageUtils.image_center(mark.coordinates), mark
             end
           end
-        end 
+        end
       end
     end
 
@@ -519,8 +518,8 @@ module RubyMarks
 
     def find_in_blocks(blocks, x, y)
       blocks.find do |result|
-        result[:x1] <= x && result[:x2] >= x && 
-        result[:y1] <= y && result[:y2] >= y   
+        result[:x1] <= x && result[:x2] >= x &&
+        result[:y1] <= y && result[:y2] >= y
       end
     end
 
@@ -534,26 +533,26 @@ module RubyMarks
 
         dr = Magick::Draw.new
         dr.stroke_width = 2
-        dr.stroke(RubyMarks::COLORS[1])         
+        dr.stroke(RubyMarks::COLORS[1])
         dr.line(mark.coordinates[:x1], mark.coordinates[:y1], mark.coordinates[:x2], mark.coordinates[:y1])
         dr.line(mark.coordinates[:x2], mark.coordinates[:y1], mark.coordinates[:x2], mark.coordinates[:y2])
-        dr.line(mark.coordinates[:x2], mark.coordinates[:y2], mark.coordinates[:x1], mark.coordinates[:y2])  
-        dr.line(mark.coordinates[:x1], mark.coordinates[:y2], mark.coordinates[:x1], mark.coordinates[:y1])                  
+        dr.line(mark.coordinates[:x2], mark.coordinates[:y2], mark.coordinates[:x1], mark.coordinates[:y2])
+        dr.line(mark.coordinates[:x1], mark.coordinates[:y2], mark.coordinates[:x1], mark.coordinates[:y1])
         dr.draw(file)
       else
         dr.annotate(file, 0, 0, position[:x]-9, position[:y]+11, "+") do
           self.pointsize = 30
           self.fill = '#900000'
         end
-      
+
         dr = Magick::Draw.new
         dr.fill = '#FF0000'
         dr.point(position[:x], position[:y])
-        dr.point(position[:x], position[:y] + 1)   
-        dr.point(position[:x] + 1, position[:y])  
-        dr.point(position[:x] + 1, position[:y] + 1)             
+        dr.point(position[:x], position[:y] + 1)
+        dr.point(position[:x] + 1, position[:y])
+        dr.point(position[:x] + 1, position[:y] + 1)
         dr.draw(file)
-      end      
+      end
     end
 
   end

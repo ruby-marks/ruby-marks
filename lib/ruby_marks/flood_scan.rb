@@ -1,12 +1,16 @@
 module RubyMarks
-
   class FloodScan
+    attr_reader :image, :node, :width, :height, :queue, :vector_x, :vector_y,
+                :steps
 
-    def scan(image, node, width, height)
-      target = Magick::Pixel.new(65535, 65535, 65535, 0) 
-      replacement = Magick::Pixel.new(0, 0, 0, 0)
-      queue = Array.new
-      queue.push(node) 
+    def initialize(image)
+      @image = image
+    end
+
+    def scan(node, width, height)
+      initialize_data(node, width, height)
+
+      queue.push(node)
       vx = Hash.new { |hash, key| hash[key] = [] }
       vy = Hash.new { |hash, key| hash[key] = [] }
       steps = 0
@@ -20,7 +24,7 @@ module RubyMarks
           x -= 1
         end
         while x < image.columns && image.get_pixels(x, y, 1, 1)[0] == target
-          image.store_pixels(x, y, 1, 1, [replacement]) 
+          image.store_pixels(x, y, 1, 1, [replacement])
           if !span_up && y > 0 && image.get_pixels(x, y - 1, 1, 1)[0] == target
             queue.push(Magick::Point.new(x, y - 1))
             span_up = true
@@ -33,12 +37,12 @@ module RubyMarks
           elsif span_down && y < image.rows - 1 && image.get_pixels(x, y + 1, 1, 1)[0] != target
             span_down = false
           end
-          vx[y] << x 
+          vx[y] << x
           vy[x] << y
           x += 1
           steps += 1
         end
-        queue.push(Magick::Point.new(x, y - 1)) if queue.empty? && steps < 100 
+        queue.push(Magick::Point.new(x, y - 1)) if queue.empty? && steps < 100
       end
       vx = vx.find_mesure(width, 5).max_frequency
       vy = vy.find_mesure(height, 5).max_frequency
@@ -48,6 +52,24 @@ module RubyMarks
         {}
       end
     end
-  end
 
+    private
+
+    def initialize_data(node, width, height)
+      @node = node
+      @width = width
+      @height = height
+      @steps = 0
+      @vector_x = @vector_y = Hash.new([])
+      @queue = Array.new
+    end
+
+    def target
+      Magick::Pixel.new(65535, 65535, 65535, 0)
+    end
+
+    def replacement
+      Magick::Pixel.new(0, 0, 0, 0)
+    end
+  end
 end
