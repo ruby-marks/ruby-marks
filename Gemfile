@@ -1,9 +1,4 @@
 source "https://rubygems.org"
 
+# Specify your gem's dependencies in b2w_client.gemspec
 gemspec
-
-gem 'rmagick', '2.13.2'
-
-group :test do
-  gem 'rake'
-end

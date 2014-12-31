@@ -3,14 +3,11 @@
 require 'bundler'
 Bundler::GemHelper.install_tasks
 
-require "rake/testtask"
+require 'rspec/core/rake_task'
 
-desc 'Default: run unit tests.'
-task :default => :test
+desc 'Default: run specs.'
+task :default => :spec
 
-Rake::TestTask.new(:test) do |t|
-  t.libs << 'lib'
-  t.libs << 'test'
-  t.pattern = 'test/**/*_test.rb'
+RSpec::Core::RakeTask.new(:spec) do |t|
   t.verbose = true
 end

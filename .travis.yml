@@ -1,5 +1,12 @@
+sudo: false
 language: ruby
+env:
+  CI: 1
 rvm:
   - 1.9.3
-  - 1.9.2
+  - 2.0.0
+  - 2.1.5
   #- rbx-19mode
+addons:
+  code_climate:
+    repo_token: 6da7995a8ca918ac0902d60dc0eb49aa6ae2b94730ea0024e15dcc8f73dd3b1c
