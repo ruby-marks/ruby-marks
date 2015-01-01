@@ -1,6 +1,6 @@
 #encoding: utf-8
 module RubyMarks
-  
+
   class Group
     attr_reader   :label, :recognizer
     attr_accessor :mark_width, :mark_height, :marks_options, :coordinates, :expected_coordinates,
@@ -28,7 +28,6 @@ module RubyMarks
       yield self if block_given?
     end
 
-
     def incorrect_expected_lines
       @expected_lines != marks.count
     end
@@ -37,31 +36,24 @@ module RubyMarks
       @mark_width - @mark_width_tolerance
     end
 
-
     def mark_width_with_up_tolerance
       @mark_width + @mark_width_tolerance
     end
-
 
     def mark_height_with_down_tolerance
       @mark_height - @mark_height_tolerance
     end
 
-
     def mark_height_with_up_tolerance
       @mark_height + @mark_height_tolerance
     end
-
 
     def mark_width_tolerance_range
       mark_width_with_down_tolerance..mark_width_with_up_tolerance
     end
 
-
     def mark_height_tolerance_range
       mark_height_with_down_tolerance..mark_height_with_up_tolerance
     end
-
   end
-
 end
