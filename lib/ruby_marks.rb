@@ -39,7 +39,12 @@ module RubyMarks
   require_relative 'ruby_marks/mark'
   require_relative 'ruby_marks/recognizer'
   require_relative 'ruby_marks/watcher'
-  require_relative 'ruby_marks/utils/flood_scan/flood_scan'
+
+  module FloodScanProcessors
+    require_relative 'ruby_marks/utils/flood_scan_processors/node_processor'
+  end
+
+  require_relative 'ruby_marks/utils/flood_scan'
 
   mattr_accessor :edge_level
   @@edge_level = 4
