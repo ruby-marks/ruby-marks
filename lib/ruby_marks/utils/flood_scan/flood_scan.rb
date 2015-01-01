@@ -28,29 +28,53 @@ module RubyMarks
       y = node.y
       span_up = false;
       span_down = false;
-      while x > 0 && image.get_pixels(x - 1, y, 1, 1)[0] == target
-        x -= 1
-      end
-      while x < image.columns && image.get_pixels(x, y, 1, 1)[0] == target
+
+      x -= 1 while target_is_previous_pixel?(x, y)
+
+      while target_is_current_pixel?(x, y)
         image.store_pixels(x, y, 1, 1, [replacement])
-        if !span_up && y > 0 && image.get_pixels(x, y - 1, 1, 1)[0] == target
-          queue.push(Magick::Point.new(x, y - 1))
-          span_up = true
-        elsif span_up && y > 0 && image.get_pixels(x, y - 1, 1, 1)[0] != target
-          span_up = false
-        end
-        if !span_down && y < image.rows - 1 && image.get_pixels(x, y + 1, 1, 1)[0] == target
-          queue.push(Magick::Point.new(x, y + 1))
-          span_down = true
-        elsif span_down && y < image.rows - 1 && image.get_pixels(x, y + 1, 1, 1)[0] != target
-          span_down = false
-        end
+        span_up = process_span_up(x, y, span_up)
+        span_down = process_span_down(x, y, span_down)
+
         @vector_x[y] << x
         @vector_y[x] << y
         x += 1
         @steps += 1
       end
+
       queue.push(Magick::Point.new(x, y - 1)) if queue.empty? && steps < 100
+    end
+
+    def target_is_previous_pixel?(x, y)
+      x > 0 && image.get_pixels(x - 1, y, 1, 1)[0] == target
+    end
+
+    def target_is_current_pixel?(x, y)
+      x < image.columns && image.get_pixels(x, y, 1, 1)[0] == target
+    end
+
+    def process_span_up(x, y, span_up)
+      pixel = y > 0 && image.get_pixels(x, y - 1, 1, 1)[0]
+      if !span_up && pixel == target
+        queue.push(Magick::Point.new(x, y - 1))
+        span_up = true
+      elsif span_up && pixel != target
+        span_up = false
+      end
+
+      span_up
+    end
+
+    def process_span_down(x, y, span_down)
+      pixel = y < image.rows - 1 && image.get_pixels(x, y + 1, 1, 1)[0]
+      if !span_down && pixel == target
+        queue.push(Magick::Point.new(x, y + 1))
+        span_down = true
+      elsif span_down && pixel != target
+        span_down = false
+      end
+
+      span_down
     end
 
     def define_max_frequencies
