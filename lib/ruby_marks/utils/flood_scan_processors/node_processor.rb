@@ -21,10 +21,8 @@ module RubyMarks
       private
 
       def initialize_data(node)
-        @span_up = false;
-        @span_down = false;
-        @x = node.x
-        @y = node.y
+        @span_up = @span_down = false
+        @x, @y = node.x, node.y
       end
 
       def go_to_previous_line

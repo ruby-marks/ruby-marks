@@ -52,13 +52,12 @@ module RubyMarks
     end
 
     def initialize_data(node, width, height)
-      @node = node
-      @width = width
-      @height = height
       @steps = 0
+      @queue = Array.new.push(node)
+      @node = node
+      @width, @height = width, height
       @vector_x = new_vector_hash
       @vector_y = new_vector_hash
-      @queue = Array.new.push(node)
     end
 
     def new_vector_hash
