@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Ruby marks by andrerpbts</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Ruby marks</h1>
+      <h2 class="project-tagline">Ruby Marks</h2>
+      <a href="https://github.com/andrerpbts/ruby_marks" class="btn">View on GitHub</a>
+      <a href="https://github.com/andrerpbts/ruby_marks/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/andrerpbts/ruby_marks/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h1>
+<a id="ruby-marks-" class="anchor" href="#ruby-marks-" aria-hidden="true"><span class="octicon octicon-link"></span></a>Ruby Marks </h1>
+
+<p><a href="http://travis-ci.org/andrerpbts/ruby_marks"><img src="https://secure.travis-ci.org/andrerpbts/ruby_marks.png?branch=master" alt="Build Status"></a>
+<a href="https://codeclimate.com/github/andrerpbts/ruby_marks"><img src="https://codeclimate.com/github/andrerpbts/ruby_marks/badges/gpa.svg" alt="Code Climate"></a>
+<a href="https://codeclimate.com/github/andrerpbts/ruby_marks"><img src="https://codeclimate.com/github/andrerpbts/ruby_marks/badges/coverage.svg" alt="Test Coverage"></a></p>
+
+<p>A simple OMR (<a href="http://en.wikipedia.org/wiki/Optical_mark_recognition">Optical Mark Recognition</a>) gem for ruby.</p>
+
+<h2>
+<a id="requirements" class="anchor" href="#requirements" aria-hidden="true"><span class="octicon octicon-link"></span></a>Requirements</h2>
+
+<p>This gem uses <a href="http://www.imagemagick.org">ImageMagick</a> to manipulate the given images.
+You can verify if this utility is installed by the command line <code>which convert</code>, which should return 
+the current ImageMagick path.</p>
+
+<p>For example, <code>/usr/local/bin/convert</code>.</p>
+
+<p>If not installed:</p>
+
+<h3>
+<a id="macos-x" class="anchor" href="#macos-x" aria-hidden="true"><span class="octicon octicon-link"></span></a>MacOS X</h3>
+
+<p>If you're on Mac OS X, Homebrew may be your best option:</p>
+
+<pre><code>brew install imagemagick
+</code></pre>
+
+<h3>
+<a id="ubuntu" class="anchor" href="#ubuntu" aria-hidden="true"><span class="octicon octicon-link"></span></a>Ubuntu</h3>
+
+<p>On Ubuntu, the <code>apt-get</code> should be enough:</p>
+
+<pre><code>apt-get install imagemagick
+</code></pre>
+
+<h2>
+<a id="supported-versions" class="anchor" href="#supported-versions" aria-hidden="true"><span class="octicon octicon-link"></span></a>Supported versions</h2>
+
+<ul>
+<li>Ruby 1.9.3</li>
+<li>Ruby 2.0.x</li>
+<li>Ruby 2.1.x</li>
+</ul>
+
+<h2>
+<a id="install" class="anchor" href="#install" aria-hidden="true"><span class="octicon octicon-link"></span></a>Install</h2>
+
+<p>If you are using <code>Bundler</code>, just put this line in your Gemfile:</p>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-k">gem</span> <span class="pl-s"><span class="pl-pds">'</span>ruby_marks<span class="pl-pds">'</span></span></pre></div>
+
+<p>Then run bundle install command:</p>
+
+<pre><code>bundle
+</code></pre>
+
+<p>If not, you still can run a default gem installation method:</p>
+
+<pre><code>gem install ruby_marks
+</code></pre>
+
+<p>And require it in your ruby code:</p>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-k">require</span> <span class="pl-s"><span class="pl-pds">'</span>ruby_marks<span class="pl-pds">'</span></span> </pre></div>
+
+<h2>
+<a id="how-it-works" class="anchor" href="#how-it-works" aria-hidden="true"><span class="octicon octicon-link"></span></a>How it Works</h2>
+
+<p>Using a template document, you should especify the expected area where each group is. By applying an edge detect algorithm
+it will discover where the groups are, and will check if they are near the expected position. 
+After the groups being found, the gem will perform a scan in each group in order to recognize their marks. 
+In the end, returns a hash with each correspondent mark found in the group.</p>
+
+<p>The gem will not perform deskew in your documents. If the document have a huge skew, then you should apply your own
+deskew method on the file before.</p>
+
+<pre><code>NOTE:
+We changed the way it recognizes the marks. It's not based on clocks anymore. If you are updating the gem 
+from 0.1.4 version, you should refactor your code to eliminate the clocks parameters and adjust 
+some new configurations.
+</code></pre>
+
+<h2>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage</h2>
+
+<p>Unfortunatelly, this gem will require a bit more configuration to work, since the implementation depends 
+a lot of your document sizes, positions, brightness, etc...</p>
+
+<p>That said, lets describe it's basic structure. The example will assume a directory with some png images like this one:</p>
+
+<p><a href="https://github.com/andrerpbts/ruby_marks/blob/master/assets/sheet_demo2.png"><img src="https://raw.github.com/andrerpbts/ruby_marks/master/assets/sheet_demo2.png" alt="Document Example"></a></p>
+
+<p>First, we will need to get the pixels coordinates, using one document as template, of the areas 
+where the expected groups are. This image can explain where to pick each position:</p>
+
+<p><a href="https://github.com/andrerpbts/ruby_marks/blob/master/assets/sheet_demo2_group_coords.png"><img src="https://raw.github.com/andrerpbts/ruby_marks/master/assets/sheet_demo2_group_coords.png" alt="Document Example"></a></p>
+
+<p>The threshold level should be adjusted too, in order to don't get a too bright or too polluted marks. See:</p>
+
+<p><a href="https://github.com/andrerpbts/ruby_marks/blob/master/assets/threshold_examples.png"><img src="https://raw.github.com/andrerpbts/ruby_marks/master/assets/threshold_examples.png" alt="Document Example"></a></p>
+
+<p>Then, we write a basic code to scan it and print result on console (each option available are described bellow):</p>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-c"># Instantiate the Recognizer </span>
+recognizer <span class="pl-k">=</span> <span class="pl-c1">RubyMarks</span>::<span class="pl-c1">Recognizer</span>.<span class="pl-k">new</span>
+
+<span class="pl-c"># Configuring the document aspects</span>
+recognizer.configure <span class="pl-k">do </span>|<span class="pl-smi">config</span>|
+  config.threshold_level <span class="pl-k">=</span> <span class="pl-c1">90</span>
+  config.default_expected_lines <span class="pl-k">=</span> <span class="pl-c1">5</span>
+
+  config.define_group <span class="pl-c1">:first</span>  <span class="pl-k">do </span>|<span class="pl-smi">group</span>|
+    group.expected_coordinates <span class="pl-k">=</span> {<span class="pl-c1">x1:</span> <span class="pl-c1">34</span>, <span class="pl-c1">y1:</span> <span class="pl-c1">6</span>, <span class="pl-c1">x2:</span> <span class="pl-c1">160</span>, <span class="pl-c1">y2:</span> <span class="pl-c1">134</span>}
+  <span class="pl-k">end</span>
+
+  config.define_group <span class="pl-c1">:second</span> <span class="pl-k">do </span>|<span class="pl-smi">group</span>| 
+    group.expected_coordinates <span class="pl-k">=</span> {<span class="pl-c1">x1:</span> <span class="pl-c1">258</span>, <span class="pl-c1">y1:</span> <span class="pl-c1">6</span>, <span class="pl-c1">x2:</span> <span class="pl-c1">388</span>, <span class="pl-c1">y2:</span> <span class="pl-c1">134</span>}
+  <span class="pl-k">end</span>
+
+  config.define_group <span class="pl-c1">:third</span>  <span class="pl-k">do </span>|<span class="pl-smi">group</span>| 
+    group.expected_coordinates <span class="pl-k">=</span> {<span class="pl-c1">x1:</span> <span class="pl-c1">486</span>, <span class="pl-c1">y1:</span> <span class="pl-c1">6</span>, <span class="pl-c1">x2:</span> <span class="pl-c1">614</span>, <span class="pl-c1">y2:</span> <span class="pl-c1">134</span>}
+  <span class="pl-k">end</span>
+
+  config.define_group <span class="pl-c1">:fourth</span> <span class="pl-k">do </span>|<span class="pl-smi">group</span>| 
+    group.expected_coordinates <span class="pl-k">=</span> {<span class="pl-c1">x1:</span> <span class="pl-c1">714</span>, <span class="pl-c1">y1:</span> <span class="pl-c1">6</span>, <span class="pl-c1">x2:</span> <span class="pl-c1">844</span>, <span class="pl-c1">y2:</span> <span class="pl-c1">134</span>}
+  <span class="pl-k">end</span>
+
+  config.define_group <span class="pl-c1">:fifth</span>  <span class="pl-k">do </span>|<span class="pl-smi">group</span>| 
+    group.expected_coordinates <span class="pl-k">=</span> {<span class="pl-c1">x1:</span> <span class="pl-c1">942</span>, <span class="pl-c1">y1:</span> <span class="pl-c1">6</span>, <span class="pl-c1">x2:</span> <span class="pl-c1">1068</span>, <span class="pl-c1">y2:</span> <span class="pl-c1">134</span>}
+  <span class="pl-k">end</span>
+<span class="pl-k">end</span></pre></div>
+
+<p>Then we need to adjust the edge level to make sure the groups are being highlighted enough to being recognized. 
+You can see the image after the edge algorithm is applied if you write the file after submit it to Recognizer. Like this:</p>
+
+<div class="highlight highlight-ruby"><pre>recognizer.file <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>example.png<span class="pl-pds">'</span></span>
+file <span class="pl-k">=</span> <span class="pl-smi">@recognizer</span>.file
+filename <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>temp_image.png<span class="pl-pds">"</span></span>
+file.write(filename)</pre></div>
+
+<p>The result image should be like this one (note that all the groups are separated from the rest of the document these white blocks):</p>
+
+<p><a href="https://github.com/andrerpbts/ruby_marks/blob/master/assets/sheet_demo2_edge.png"><img src="https://raw.github.com/andrerpbts/ruby_marks/master/assets/sheet_demo2_edge.png" alt="Document Example"></a></p>
+
+<p>There's a method you can call to help you to identify how the document is being recognized. This method return the image
+with the showing where is the expected groups coordinates are, where are the actual groups coordinates, and where the marks 
+is being recognized in each group.</p>
+
+<p>Example:</p>
+
+<div class="highlight highlight-ruby"><pre>flagged_document <span class="pl-k">=</span> recognizer.flag_all_marks
+flagged_document.write(temp_filename)</pre></div>
+
+<p>Will return the image below:</p>
+
+<p><a href="https://github.com/andrerpbts/ruby_marks/blob/master/assets/sheet_demo2_flagged.png"><img src="https://raw.github.com/andrerpbts/ruby_marks/master/assets/sheet_demo2_flagged.png" alt="Flagged Document Example"></a></p>
+
+<p>With all this configured, we can submit our images to a scan:</p>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-c"># Read all documents in directory thats in a png format</span>
+<span class="pl-c1">Dir</span>[<span class="pl-s"><span class="pl-pds">"</span>./*.png<span class="pl-pds">"</span></span>].each <span class="pl-k">do </span>|<span class="pl-smi">file</span>|
+  recognizer.file <span class="pl-k">=</span> file
+  puts recognizer.scan
+<span class="pl-k">end</span></pre></div>
+
+<p>And, this should puts each scan in a hash, like this:</p>
+
+<pre><code>{
+  first: { 
+    1 =&gt; ['A'],
+    2 =&gt; ['C'],
+    3 =&gt; ['B'],
+    4 =&gt; ['B'],
+    5 =&gt; ['D']
+  },
+  second: {
+    1 =&gt; ['E'],
+    2 =&gt; ['A'],
+    3 =&gt; ['B'],
+    4 =&gt; ['A'],
+    5 =&gt; ['B']
+  },
+  three: {
+    1 =&gt; ['B'],    
+    2 =&gt; ['B'],
+    3 =&gt; ['D'], 
+    4 =&gt; ['B'],    
+    5 =&gt; ['B']
+  },
+  four: {
+    1 =&gt; ['B'],
+    2 =&gt; ['E'],    
+    3 =&gt; ['A'],    
+    4 =&gt; ['C'],    
+    5 =&gt; ['D']
+  },
+  five: {
+    1 =&gt; ['B'],
+    2 =&gt; ['A'],
+    3 =&gt; ['A'],
+    4 =&gt; ['C'],
+    5 =&gt; ['D']
+  }
+}
+</code></pre>
+
+<h2>
+<a id="general-configuration-options" class="anchor" href="#general-configuration-options" aria-hidden="true"><span class="octicon octicon-link"></span></a>General Configuration Options</h2>
+
+<p>As you may see, it's necessary configure some document aspects to make this work properly. So, lets describe
+each general configuration option available:</p>
+
+<h3>
+<a id="edge-level" class="anchor" href="#edge-level" aria-hidden="true"><span class="octicon octicon-link"></span></a>Edge level</h3>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-c"># The size of the edge to apply in the edge detect algorithm. </span>
+<span class="pl-c"># The default value is 4, but is very important you verify the algorithm result and adjust it to work.</span>
+config.edge_level <span class="pl-k">=</span> <span class="pl-c1">4</span></pre></div>
+
+<h3>
+<a id="threshold-level" class="anchor" href="#threshold-level" aria-hidden="true"><span class="octicon octicon-link"></span></a>Threshold level</h3>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-c"># Applies the given percentual in the image in order to get it back with only black and white pixels. </span>
+<span class="pl-c"># Low percentuals will result in a bright image, as High percentuals will result in a more darken image.</span>
+<span class="pl-c"># The default value is 60, but is very important you verify the algorithm result and adjust it to work.</span>
+
+config.threshold_level <span class="pl-k">=</span> <span class="pl-c1">60</span>  </pre></div>
+
+<h3>
+<a id="scan-timeout" class="anchor" href="#scan-timeout" aria-hidden="true"><span class="octicon octicon-link"></span></a>Scan timeout</h3>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-c"># Sets a timeout in seconds, to break long time scans.   </span>
+<span class="pl-c"># The default value is 0 (zero) and means there's no timeout. Any value will quit the scan and raise timed_out_watcher</span>
+
+config.scan_timeout <span class="pl-k">=</span> <span class="pl-c1">0</span>  </pre></div>
+
+<h3>
+<a id="expected-lines" class="anchor" href="#expected-lines" aria-hidden="true"><span class="octicon octicon-link"></span></a>Expected lines</h3>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-c"># The scan will raise the incorrect group watcher if one or more group don't have the expected number of lines</span>
+<span class="pl-c"># Here, this configuration becomes valid to all groups.</span>
+<span class="pl-c"># The default value is 20, but is very </span>
+
+config.default_expected_lines <span class="pl-k">=</span> <span class="pl-c1">20</span></pre></div>
+
+<h3>
+<a id="default-blocks-sizes-tolerances" class="anchor" href="#default-blocks-sizes-tolerances" aria-hidden="true"><span class="octicon octicon-link"></span></a>Default blocks sizes tolerances</h3>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-c"># Defines the tolerance in width and height of the group blocks (in pixels) to compare with de expected block size.</span>
+<span class="pl-c"># This tolerance is intended to make the scan recognizes the correct whole group. The scanned area + this tolerance </span>
+<span class="pl-c"># should be greater than the expected sizes of the block, in order to consider it. </span>
+<span class="pl-c"># In small size groups, you should reduce this parameter in order to don't capture weong groups positions, such a </span>
+<span class="pl-c"># not marked bubble as a group, for example.</span>
+<span class="pl-c"># The default values is 100 for both width and height, and should be adjusted for your documents. </span>
+
+config.default_block_width_tolerance <span class="pl-k">=</span> <span class="pl-c1">100</span>
+config.default_block_height_tolerance <span class="pl-k">=</span> <span class="pl-c1">100</span></pre></div>
+
+<h3>
+<a id="default-mark-sizes" class="anchor" href="#default-mark-sizes" aria-hidden="true"><span class="octicon octicon-link"></span></a>Default mark sizes</h3>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-c"># Defines the expected width and height of the marks (in pixels). With the tolerance, if the recognized </span>
+<span class="pl-c"># mark exceeds or stricts those values, it will be ignored.</span>
+<span class="pl-c"># The default values is 20 to width and 20 to height. Since the marks can be different, you SHOULD</span>
+<span class="pl-c"># calculate those sizes for your documents. </span>
+
+config.default_mark_width <span class="pl-k">=</span> <span class="pl-c1">20</span>
+config.default_mark_height <span class="pl-k">=</span> <span class="pl-c1">20</span></pre></div>
+
+<h3>
+<a id="default-mark-sizes-tolerances" class="anchor" href="#default-mark-sizes-tolerances" aria-hidden="true"><span class="octicon octicon-link"></span></a>Default mark sizes tolerances</h3>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-c"># Defines the tolerance in width and height of the marks (in pixels). With default_mark_width and default_mark_width</span>
+<span class="pl-c"># size, if the recognized mark exceeds or stricts those values, it will be ignored.</span>
+<span class="pl-c"># The default values is 4 for both width and height. </span>
+
+config.default_mark_width_tolerance <span class="pl-k">=</span> <span class="pl-c1">4</span>
+config.default_mark_height_tolerance <span class="pl-k">=</span> <span class="pl-c1">4</span></pre></div>
+
+<h3>
+<a id="intensity-percentual" class="anchor" href="#intensity-percentual" aria-hidden="true"><span class="octicon octicon-link"></span></a>Intensity percentual</h3>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-c"># Set the intensity sensitivity (in percentual) expected to recognize a mark as a marked one. </span>
+<span class="pl-c"># When the scan find some potential marked area, then it will analyse if the count of valid pixels (black pixels)</span>
+<span class="pl-c"># have this minimun percentage.</span>
+<span class="pl-c"># Increasing this value, the recognition becomes more sensitive and can ignore valid weaker markings. </span>
+<span class="pl-c"># Decreasing this value, recognition becomes less sensitive and can recognize false markings.</span>
+<span class="pl-c"># The default value is 50. </span>
+
+config.intensity_percentual <span class="pl-k">=</span> <span class="pl-c1">50</span></pre></div>
+
+<h3>
+<a id="default-marks-options" class="anchor" href="#default-marks-options" aria-hidden="true"><span class="octicon octicon-link"></span></a>Default marks options</h3>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-c"># Set the marks options that the groups represents. When the scan recognizes a mark in some position,</span>
+<span class="pl-c"># it will return they value in the result hash.</span>
+<span class="pl-c"># The default value is the [A, B, C, D, E] array.</span>
+
+config.default_marks_options <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">%w{</span>A B C D E<span class="pl-pds">}</span></span></pre></div>
+
+<h3>
+<a id="default-distance-between-each-mark-in-group" class="anchor" href="#default-distance-between-each-mark-in-group" aria-hidden="true"><span class="octicon octicon-link"></span></a>Default distance between each mark in group</h3>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-c"># Defines the distance (in pixel) between the middle of a mark and the middle of the next mark in the same group.</span>
+<span class="pl-c"># This option is used to try suppose not found marks.</span>
+<span class="pl-c"># The default value is 25</span>
+
+config.default_distance_between_marks <span class="pl-k">=</span> <span class="pl-c1">25</span></pre></div>
+
+<h2>
+<a id="group-configuration-options" class="anchor" href="#group-configuration-options" aria-hidden="true"><span class="octicon octicon-link"></span></a>Group Configuration Options</h2>
+
+<p>The General Configuration Options is more generic for the entire document. So, you can have some particularities
+when defining a group. So:</p>
+
+<h3>
+<a id="expected-coordinates" class="anchor" href="#expected-coordinates" aria-hidden="true"><span class="octicon octicon-link"></span></a>Expected coordinates</h3>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-c"># This configuration defines the area coordinate where the group is expected to be. </span>
+
+group.expected_coordinates <span class="pl-k">=</span> {<span class="pl-c1">x1:</span> <span class="pl-c1">145</span>, <span class="pl-c1">y1:</span> <span class="pl-c1">780</span>, <span class="pl-c1">x2:</span> <span class="pl-c1">270</span>, <span class="pl-c1">y2:</span> <span class="pl-c1">1290</span>}</pre></div>
+
+<h3>
+<a id="block-sizes-tolerances" class="anchor" href="#block-sizes-tolerances" aria-hidden="true"><span class="octicon octicon-link"></span></a>Block sizes tolerances</h3>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-c"># It overwrites the default_block_width_tolerance and default_block_height_tolerance values for the group you configure it. </span>
+
+group.block_width_tolerance  <span class="pl-k">=</span> <span class="pl-c1">RubyMarks</span>.default_block_width_tolerance
+group.block_height_tolerance <span class="pl-k">=</span> <span class="pl-c1">RubyMarks</span>.default_block_height_tolerance</pre></div>
+
+<h3>
+<a id="mark-sizes" class="anchor" href="#mark-sizes" aria-hidden="true"><span class="octicon octicon-link"></span></a>Mark sizes</h3>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-c"># It overwrites the default_mark_width and default_mark_height values for the group you configure it. </span>
+
+group.mark_width  <span class="pl-k">=</span> <span class="pl-c1">RubyMarks</span>.default_mark_width
+group.mark_height <span class="pl-k">=</span> <span class="pl-c1">RubyMarks</span>.default_mark_height</pre></div>
+
+<h3>
+<a id="mark-sizes-tolerances" class="anchor" href="#mark-sizes-tolerances" aria-hidden="true"><span class="octicon octicon-link"></span></a>Mark sizes tolerances</h3>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-c"># It overwrites the default_mark_width_tolerance and default_mark_height_tolerance values for the group you configure it. </span>
+
+group.mark_width_tolerance  <span class="pl-k">=</span> <span class="pl-c1">RubyMarks</span>.default_mark_width_tolerance
+group.mark_height_tolerance <span class="pl-k">=</span> <span class="pl-c1">RubyMarks</span>.default_mark_height_tolerance</pre></div>
+
+<h3>
+<a id="marks-options" class="anchor" href="#marks-options" aria-hidden="true"><span class="octicon octicon-link"></span></a>Marks options</h3>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-c"># It overwrites the default_marks_options values for the group you configure it. </span>
+
+group.marks_options <span class="pl-k">=</span> <span class="pl-c1">RubyMarks</span>.default_marks_options</pre></div>
+
+<h3>
+<a id="distance-between-marks" class="anchor" href="#distance-between-marks" aria-hidden="true"><span class="octicon octicon-link"></span></a>Distance Between Marks</h3>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-c"># It overwrites the default_distance_between_marks values for the group you configure it. </span>
+
+group.distance_between_marks <span class="pl-k">=</span> <span class="pl-c1">RubyMarks</span>.default_distance_between_marks</pre></div>
+
+<h3>
+<a id="expected-lines-1" class="anchor" href="#expected-lines-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>Expected lines</h3>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-c"># It overwrites the default_expected_lines values for the group you configure it. </span>
+
+group.expected_lines <span class="pl-k">=</span> <span class="pl-smi">@recognizer</span>.config.default_expected_lines</pre></div>
+
+<h2>
+<a id="watchers" class="anchor" href="#watchers" aria-hidden="true"><span class="octicon octicon-link"></span></a>Watchers</h2>
+
+<p>Sometimes, due some image flaws, the scan can't recognize some group, or a mark, or even recognize 
+more than one mark in a clock row in the same group when it is not expected. Then, you can place some 
+watchers, that will perform some custom code made by yourself in those cases, such applies a deskew 
+in image and re-run the scan, for example. 
+But, be advised, if you call the scan method again inside the watcher, you should make sure that you 
+have a way to leave the watcher to avoid a endless loop. You always can check how many times the watcher 
+got raised by checking in <code>recognizer.raised_watchers[:watcher_name]</code> hash.</p>
+
+<h3>
+<a id="scan-mark-watcher" class="anchor" href="#scan-mark-watcher" aria-hidden="true"><span class="octicon octicon-link"></span></a>Scan Mark Watcher</h3>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-c"># Will execute your custom code if didn't recognizes some mark or recognizes more than one mark in a clock</span>
+<span class="pl-c"># row and the same group.  </span>
+<span class="pl-c"># It returns the recognizer object, the result of scan hash, a boolean value if this watcher was raised by unmarked</span>
+<span class="pl-c"># options and a boolean value if the watcher was raised by a multiple marks options</span>
+
+recognizer.add_watcher <span class="pl-c1">:scan_mark_watcher</span> <span class="pl-k">do </span>|<span class="pl-smi">recognizer</span>, <span class="pl-smi">result</span>, <span class="pl-smi">unmarked_group_found</span>, <span class="pl-smi">multiple_marked_found</span>|
+  <span class="pl-c"># place your custom code </span>
+<span class="pl-k">end</span></pre></div>
+
+<h3>
+<a id="scan-unmarked-watcher" class="anchor" href="#scan-unmarked-watcher" aria-hidden="true"><span class="octicon octicon-link"></span></a>Scan Unmarked Watcher</h3>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-c"># Will execute your custom code if didn't recognizes some mark.</span>
+<span class="pl-c"># It returns the recognizer object, the result of scan hash.</span>
+
+recognizer.add_watcher <span class="pl-c1">:scan_unmarked_watcher</span> <span class="pl-k">do </span>|<span class="pl-smi">recognizer</span>, <span class="pl-smi">result</span>|
+  <span class="pl-c"># place your custom code </span>
+<span class="pl-k">end</span></pre></div>
+
+<h3>
+<a id="scan-multiple-marked-watcher" class="anchor" href="#scan-multiple-marked-watcher" aria-hidden="true"><span class="octicon octicon-link"></span></a>Scan Multiple Marked Watcher</h3>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-c"># Will execute your custom code if recognizes more than one mark in a clock row and the same group.</span>
+<span class="pl-c"># It returns the recognizer object, the result of scan hash.</span>
+
+recognizer.add_watcher <span class="pl-c1">:scan_multiple_marked_watcher</span> <span class="pl-k">do </span>|<span class="pl-smi">recognizer</span>, <span class="pl-smi">result</span>|
+  <span class="pl-c"># place your custom code </span>
+<span class="pl-k">end</span></pre></div>
+
+<h3>
+<a id="incorrect-group-watcher" class="anchor" href="#incorrect-group-watcher" aria-hidden="true"><span class="octicon octicon-link"></span></a>Incorrect Group Watcher</h3>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-c"># Will execute your custom code if didn't a group isn't found, or it have a line count different than expected,</span>
+<span class="pl-c"># or in one or more lines the options marks found are different of the specified in marks options.</span>
+<span class="pl-c"># It returns the recognizer object, a boolean value to incorrect expected lines count, and a hash with the </span>
+<span class="pl-c"># incorrect bubble lines found, and a hash with the coordinates of bubbles adjusted.</span>
+<span class="pl-c"># Pay attention on incorrect_expected_lines and incorrect_bubble_line_found, because if some of this variables</span>
+<span class="pl-c"># becomes present, then your document may have an incorrect result scan...</span>
+
+recognizer.add_watcher <span class="pl-c1">:incorrect_group_watcher</span> <span class="pl-k">do </span>|<span class="pl-smi">recognizer</span>, <span class="pl-smi">incorrect_expected_lines</span>, <span class="pl-smi">incorrect_bubble_line_found</span>, <span class="pl-smi">bubbles_adjusted</span>|
+  <span class="pl-c"># place your custom code </span>
+<span class="pl-k">end</span></pre></div>
+
+<h3>
+<a id="timed-out-watcher" class="anchor" href="#timed-out-watcher" aria-hidden="true"><span class="octicon octicon-link"></span></a>Timed Out Watcher</h3>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-c"># Will execute your custom code if your scan outrun the specified timeout in configuration. It returns you recognizer </span>
+<span class="pl-c"># object.</span>
+
+recognizer.add_watcher <span class="pl-c1">:timed_out_watcher</span> <span class="pl-k">do </span>|<span class="pl-smi">recognizer</span>|
+  <span class="pl-c"># place your custom code </span>
+<span class="pl-k">end</span></pre></div>
+
+<h2>
+<a id="contributing" class="anchor" href="#contributing" aria-hidden="true"><span class="octicon octicon-link"></span></a>Contributing</h2>
+
+<ul>
+<li>Fork it</li>
+<li>Make your implementations</li>
+<li>Send me a pull request</li>
+</ul>
+
+<p>Thank you!</p>
+
+<h2>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span class="octicon octicon-link"></span></a>License</h2>
+
+<p>Copyright © 2012 André Rodrigues, Ronaldo Araújo, Rodrigo Virgilio, Lucas Correa. See MIT-LICENSE for further details.</p>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/andrerpbts/ruby_marks">Ruby marks</a> is maintained by <a href="https://github.com/andrerpbts">andrerpbts</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
+
