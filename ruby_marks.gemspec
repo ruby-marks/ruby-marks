@@ -27,7 +27,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'codeclimate-test-reporter'
   s.add_development_dependency 'pry'
 
-  s.add_dependency 'rmagick', '2.13.2'
+  s.add_dependency 'rmagick', '2.16.0'
 
   magick_version = system('convert -version')
 
