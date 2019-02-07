@@ -3,9 +3,10 @@ language: ruby
 env:
   CI: 1
 rvm:
-  - 1.9.3
-  - 2.0.0
-  - 2.1.5
+  - 2.3.8
+  - 2.4.5
+  - 2.5.3
+  - 2.6.1
   #- rbx-19mode
 addons:
   code_climate:
