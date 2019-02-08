@@ -1,13 +1,21 @@
 sudo: false
 language: ruby
+
+os:
+  - linux
+
 env:
-  CI: 1
+  - CI=1 IMAGEMAGICK_VERSION=6.8.9-10
+
 rvm:
   - 2.3.8
   - 2.4.5
   - 2.5.3
   - 2.6.1
-  #- rbx-19mode
+
+before_install:
+  - source before_install_$TRAVIS_OS_NAME.sh
+
 addons:
   code_climate:
     repo_token: 6da7995a8ca918ac0902d60dc0eb49aa6ae2b94730ea0024e15dcc8f73dd3b1c
