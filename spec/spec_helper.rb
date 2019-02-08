@@ -2,8 +2,8 @@ require 'bundler/setup'
 Bundler.setup
 
 if ENV['CI']
-  require 'codeclimate-test-reporter'
-  CodeClimate::TestReporter.start
+  require 'simplecov'
+  SimpleCov.start
 end
 
 require 'factory_girl'
