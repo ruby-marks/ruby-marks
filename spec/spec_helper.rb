@@ -6,7 +6,6 @@ if ENV['CI']
   SimpleCov.start
 end
 
-require 'factory_girl'
 require 'ruby_marks'
 require 'pry'
 
@@ -15,10 +14,6 @@ SPEC_ROOT = File.dirname(__FILE__)
 Dir[File.join(SPEC_ROOT, 'support/**/*.rb')].each { |f| require f }
 
 RSpec.configure do |config|
-  FactoryGirl.definition_file_paths << Pathname.new('factories')
-  FactoryGirl.find_definitions
-
-  config.include FactoryGirl::Syntax::Methods
   config.include SpecUtils
   config.filter_run :focus
   config.run_all_when_everything_filtered = true
