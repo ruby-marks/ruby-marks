@@ -36,9 +36,10 @@ On Ubuntu, the `apt-get` should be enough:
 Supported versions
 ------------------
 
-* Ruby 1.9.3
-* Ruby 2.0.x
-* Ruby 2.1.x
+* Ruby 2.3.x
+* Ruby 2.4.x
+* Ruby 2.5.x
+* Ruby 2.6.x
 
 Install
 -------
@@ -72,15 +73,8 @@ it will discover where the groups are, and will check if they are near the expec
 After the groups being found, the gem will perform a scan in each group in order to recognize their marks.
 In the end, returns a hash with each correspondent mark found in the group.
 
-The gem will not perform deskew in your documents. If the document have a huge skew, then you should apply your own
-deskew method on the file before.
+The gem will not perform deskew in your documents. If the document have a huge skew, then you should apply your own deskew method on the file before.
 
-```
-NOTE:
-We changed the way it recognizes the marks. It's not based on clocks anymore. If you are updating the gem
-from 0.1.4 version, you should refactor your code to eliminate the clocks parameters and adjust
-some new configurations.
-```
 
 Usage
 -----
