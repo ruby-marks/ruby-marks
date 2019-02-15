@@ -19,5 +19,5 @@ _yardoc
 doc/
 temp_*
 
-
 .DS_Store
+vendor

@@ -11,8 +11,8 @@ os:
 env:
   global:
     - CC_TEST_REPORTER_ID=1abcca9cc0cab51bf0ba6c87cf5e0c68ca7830bc4dcba9728579950ab0a0ee1d
-
-  - CI=1 IMAGEMAGICK_VERSION=6.8.9-10
+  matrix:
+    - CI=1 IMAGEMAGICK_VERSION=6.8.9-10
 
 rvm:
   - 2.3.8
@@ -30,6 +30,7 @@ before_script:
 
 script:
   - bundle exec rspec
+  - bundle exec rubocop -F
 
 after_script:
   - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT

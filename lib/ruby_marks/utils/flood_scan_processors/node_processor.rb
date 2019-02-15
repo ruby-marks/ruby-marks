@@ -22,7 +22,8 @@ module RubyMarks
 
       def initialize_data(node)
         @span_up = @span_down = false
-        @x, @y = node.x, node.y
+        @x = node.x
+        @y = node.y
       end
 
       def go_to_previous_line
@@ -36,7 +37,7 @@ module RubyMarks
       end
 
       def target_is_previous_pixel?
-        x > 0 && image.get_pixels(x - 1, y, 1, 1)[0] == target
+        x.positive? && image.get_pixels(x - 1, y, 1, 1)[0] == target
       end
 
       def target_is_current_pixel?
@@ -44,7 +45,7 @@ module RubyMarks
       end
 
       def do_span_up
-        pixel = y > 0 && image.get_pixels(x, y - 1, 1, 1)[0]
+        pixel = y.positive? && image.get_pixels(x, y - 1, 1, 1)[0]
         @span_up = do_span(span_up, pixel, y - 1)
       end
 
@@ -54,11 +55,10 @@ module RubyMarks
       end
 
       def do_span(span, pixel, y)
-        case
-        when !span && pixel == target
+        if !span && pixel == target
           queue.push(Magick::Point.new(x, y))
           true
-        when span && pixel != target
+        elsif span && pixel != target
           false
         else
           span
@@ -74,7 +74,7 @@ module RubyMarks
       end
 
       def target
-        Magick::Pixel.new(65535, 65535, 65535, 0)
+        Magick::Pixel.new(65_535, 65_535, 65_535, 0)
       end
 
       def replacement
