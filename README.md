@@ -1,9 +1,9 @@
 Ruby Marks
 ==========
 
-[![Build Status](https://secure.travis-ci.org/andrerpbts/ruby_marks.png?branch=master)](http://travis-ci.org/andrerpbts/ruby_marks)
-[![Code Climate](https://codeclimate.com/github/andrerpbts/ruby_marks/badges/gpa.svg)](https://codeclimate.com/github/andrerpbts/ruby_marks)
-[![Test Coverage](https://codeclimate.com/github/andrerpbts/ruby_marks/badges/coverage.svg)](https://codeclimate.com/github/andrerpbts/ruby_marks)
+[![Build Status](https://travis-ci.org/ruby-marks/ruby-marks.svg?branch=master)](https://travis-ci.org/ruby-marks/ruby-marks)
+[![Maintainability](https://api.codeclimate.com/v1/badges/c6cbd936857fd70812dc/maintainability)](https://codeclimate.com/github/ruby-marks/ruby-marks/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/c6cbd936857fd70812dc/test_coverage)](https://codeclimate.com/github/ruby-marks/ruby-marks/test_coverage)
 
 A simple OMR ([Optical Mark Recognition](http://en.wikipedia.org/wiki/Optical_mark_recognition)) gem for ruby.
 

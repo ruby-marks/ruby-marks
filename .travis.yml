@@ -18,4 +18,4 @@ before_install:
 
 addons:
   code_climate:
-    repo_token: 6da7995a8ca918ac0902d60dc0eb49aa6ae2b94730ea0024e15dcc8f73dd3b1c
+    repo_token: 1abcca9cc0cab51bf0ba6c87cf5e0c68ca7830bc4dcba9728579950ab0a0ee1d
