@@ -16,14 +16,14 @@ module RubyMarks
     end
 
     def coordinates
-      if vector_x && vector_y
-        {
-          x1: vector_x[0][0],
-          y1: vector_y[0][0],
-          x2: vector_x[0][1],
-          y2: vector_y[0][1]
-        }
-      end
+      return if vector_x.empty? || vector_y.empty?
+
+      {
+        x1: vector_x[0][0],
+        y1: vector_y[0][0],
+        x2: vector_x[0][1],
+        y2: vector_y[0][1]
+      }
     end
 
     private
@@ -53,9 +53,10 @@ module RubyMarks
 
     def initialize_data(node, width, height)
       @steps = 0
-      @queue = Array.new.push(node)
+      @queue = [].push(node)
       @node = node
-      @width, @height = width, height
+      @width = width
+      @height = height
       @vector_x = new_vector_hash
       @vector_y = new_vector_hash
     end

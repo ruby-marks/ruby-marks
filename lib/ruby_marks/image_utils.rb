@@ -1,8 +1,7 @@
-#encoding: utf-8
+# Need some refact on methods because they are more than 25 lines on this file
+# pls remove it on Exclude on robocop, and run bundle exec rubocop
 module RubyMarks
-
   class ImageUtils
-
     def self.calc_width(x1, x2)
       x2.to_i - x1.to_i + 1
     end
@@ -20,25 +19,27 @@ module RubyMarks
     end
 
     def self.image_center(coordinates)
-      width  = self.calc_width(coordinates[:x1], coordinates[:x2])
-      height = self.calc_height(coordinates[:y1], coordinates[:y2])
+      width  = calc_width(coordinates[:x1], coordinates[:x2])
+      height = calc_height(coordinates[:y1], coordinates[:y2])
 
-      x = self.calc_middle_horizontal(coordinates[:x1], width)
-      y = self.calc_middle_vertical(coordinates[:y1], height)
-      return {x: x, y: y}
+      x = calc_middle_horizontal(coordinates[:x1], width)
+      y = calc_middle_vertical(coordinates[:y1], height)
+      { x: x, y: y }
     end
 
+    # rubocop:disable Metrics/CyclomaticComplexity
+    # rubocop:disable Metrics/MethodLength
+    # rubocop:disable Metrics/PerceivedComplexity
+    def self.flood_scan(image, x, y, character = '', coordinates = {})
+      coordinates = { x1: 0, y1: 0, x2: image[0].size, y2: image.size } unless coordinates.any?
 
-    def self.flood_scan(image, x, y, character=" ", coordinates={})
-      coordinates = {x1: 0, y1: 0, x2: image[0].size, y2: image.size} unless coordinates.any?
-      result_mask =  Hash.new { |hash, key| hash[key] = [] }
-      result_mask.tap do |result_mask|
-        process_queue =  Hash.new { |hash, key| hash[key] = [] }
+      Hash.new { |hash, key| hash[key] = [] }.tap do |result_mask|
+        process_queue = Hash.new { |hash, key| hash[key] = [] }
         process_line = true
 
         loop do
-
           break if y > coordinates[:y2] - 1 || y < coordinates[:y1]
+
           reset_process = false
 
           if process_line
@@ -47,9 +48,13 @@ module RubyMarks
               position = image[y][current_x]
 
               break if position != character || current_x - 1 <= coordinates[:x1]
-              process_queue[y] << current_x unless process_queue[y].include?(current_x) || result_mask[y].include?(current_x)
+
+              unless process_queue[y].include?(current_x) || result_mask[y].include?(current_x)
+                process_queue[y] << current_x
+              end
+
               result_mask[y] << current_x unless result_mask[y].include?(current_x)
-              current_x = current_x - 1
+              current_x -= 1
             end
 
             current_x = x.to_i
@@ -57,9 +62,13 @@ module RubyMarks
               position = image[y][current_x]
 
               break if position != character || current_x + 1 >= coordinates[:x2]
-              process_queue[y] << current_x unless process_queue[y].include?(current_x) || result_mask[y].include?(current_x)
+
+              unless process_queue[y].include?(current_x) || result_mask[y].include?(current_x)
+                process_queue[y] << current_x
+              end
+
               result_mask[y] << current_x unless result_mask[y].include?(current_x)
-              current_x = current_x + 1
+              current_x += 1
             end
 
             result_mask[y] = result_mask[y].sort
@@ -69,39 +78,38 @@ module RubyMarks
           process_line = true
 
           process_queue[y].each do |element|
-            if y - 1 >= coordinates[:y1]
-              position = image[y-1][element]
+            next unless y - 1 >= coordinates[:y1]
 
-              if position == character && !result_mask[y-1].include?(element)
-                x = element
-                y = y - 1
-                reset_process = true
-                break
-              end
-            end
+            position = image[y - 1][element]
+
+            next unless position == character && !result_mask[y - 1].include?(element)
+
+            x = element
+            y -= 1
+            reset_process = true
+            break
           end
 
           next if reset_process
 
           process_queue[y].each do |element|
-            if y + 1 <= coordinates[:y2]
-              position = image[y+1] && image[y+1][element]
+            next unless y + 1 <= coordinates[:y2]
 
-              if position && position == character && !result_mask[y+1].include?(element)
-                x = element
-                y = y + 1
-                reset_process = true
-                break
-              else
-                process_queue[y].delete(element)
-              end
+            position = image[y + 1] && image[y + 1][element]
 
+            if position && position == character && !result_mask[y + 1].include?(element)
+              x = element
+              y += 1
+              reset_process = true
+              break
+            else
+              process_queue[y].delete(element)
             end
           end
 
           next if reset_process
 
-          process_queue.each do |k,v|
+          process_queue.each do |k, v|
             process_queue.delete(k) if v.empty?
           end
 
@@ -112,7 +120,9 @@ module RubyMarks
         end
       end
     end
-
+    # rubocop:enable Metrics/CyclomaticComplexity
+    # rubocop:enable Metrics/MethodLength
+    # rubocop:enable Metrics/PerceivedComplexity
 
     def self.to_hex(red, green, blue)
       red = get_hex_from_color(red)
@@ -121,22 +131,17 @@ module RubyMarks
       "##{red}#{green}#{blue}".upcase
     end
 
-
     def self.export_file_to_str(file)
       image = file.export_pixels_to_str
-      image = image.gsub!(Regexp.new('\xFF\xFF\xFF', nil, 'n'), " ,") if image
-      image = image.gsub!(Regexp.new('\x00\x00\x00', nil, 'n'), ".,") if image
+      image = image.gsub!(Regexp.new('\xFF\xFF\xFF', nil, 'n'), ' ,') if image
+      image = image.gsub!(Regexp.new('\x00\x00\x00', nil, 'n'), '.,') if image
       image = image.split(',') if image
-      image = image.each_slice(file.page.width).to_a  if image
+      image.each_slice(file.page.width).to_a if image
     end
 
-
-    private
     def self.get_hex_from_color(color)
       color = color.to_s(16)[0..1]
       color.size < 2 ? "0#{color}" : color
     end
-
   end
-
 end
