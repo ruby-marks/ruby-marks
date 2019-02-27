@@ -1,21 +1,22 @@
 module RubyMarks
   class Mark
-    attr_accessor :coordinates, :group, :position, :line, :image_str, :distance_from_previous
-
     def initialize(params = {})
-      params.each do |k, v|
-        send("#{k}=", v) if respond_to?("#{k}=")
-      end
+      @coordinates            = params[:coordinates]
+      @group                  = params[:group]
+      @position               = params[:position]
+      @line                   = params[:line]
+      @image_str              = params[:image_str]
+      @distance_from_previous = params[:distance_from_previous]
     end
 
     def marked?
-      intensity >= @group.recognizer.config.intensity_percentual if @image_str
+      intensity >= group.recognizer.config.intensity_percentual if image_str
     end
 
     def intensity
-      colors = [] if @image_str
+      colors = [] if image_str
 
-      @image_str.each do |y|
+      image_str.each do |y|
         y.each do |x|
           colors << x
         end
@@ -29,10 +30,14 @@ module RubyMarks
     end
 
     def value
-      position = @group.marks[line].index(self) if @group
+      position = group.marks[line].index(self) if group
 
-      values = @group.marks_options
+      values = group.marks_options
       position && values[position]
     end
+
+    private
+
+    attr_reader :coordinates, :group, :position, :line, :image_str, :distance_from_previous
   end
 end
