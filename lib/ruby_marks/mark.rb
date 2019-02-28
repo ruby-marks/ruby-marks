@@ -3,30 +3,21 @@ module RubyMarks
     def initialize(params = {})
       @coordinates            = params[:coordinates]
       @group                  = params[:group]
-      @position               = params[:position]
       @line                   = params[:line]
       @image_str              = params[:image_str]
-      @distance_from_previous = params[:distance_from_previous]
     end
 
-    def marked?
-      intensity >= group.recognizer.config.intensity_percentual if image_str
+    def marked?(intensity_percentage)
+      return unless image_str
+
+      intensity >= intensity_percentage
     end
 
     def intensity
-      colors = [] if image_str
+      return unless image_str
 
-      image_str.each do |y|
-        y.each do |x|
-          colors << x
-        end
-      end
-
-      colors.count('.') * 100 / colors.size
-    end
-
-    def unmarked?
-      !marked?
+      nodes = image_str.flatten
+      nodes.count('.') * 100 / nodes.size
     end
 
     def value
@@ -38,6 +29,6 @@ module RubyMarks
 
     private
 
-    attr_reader :coordinates, :group, :position, :line, :image_str, :distance_from_previous
+    attr_reader :coordinates, :group, :line, :image_str
   end
 end
