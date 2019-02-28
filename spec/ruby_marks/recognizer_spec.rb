@@ -59,17 +59,6 @@ describe RubyMarks::Recognizer do
     it { expect(expected_file.class).to eq(Magick::Image) }
   end
 
-  describe '#detect_groups' do
-    let(:group) { subject.groups[:one] }
-
-    before do
-      subject.detect_groups
-    end
-
-    it { expect(group.marks[1].first).to be_marked }
-    it { expect(group.marks[2].first).to be_unmarked }
-  end
-
   describe '#scan' do
     let(:expected_hash) do
       {

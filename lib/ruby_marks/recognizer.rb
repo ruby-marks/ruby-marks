@@ -89,7 +89,7 @@ module RubyMarks
           marks = Hash.new { |hash, key| hash[key] = [] }
           group.marks.each_pair do |line, value|
             value.each do |mark|
-              marks[line] << mark.value if mark.marked? && mark.value
+              marks[line] << mark.value if mark.marked?(config.intensity_percentual) && mark.value
             end
 
             multiple_marked_found = true if marks[line].size > 1
