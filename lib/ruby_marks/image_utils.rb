@@ -31,14 +31,16 @@ module RubyMarks
     # rubocop:disable Metrics/MethodLength
     # rubocop:disable Metrics/PerceivedComplexity
     def self.flood_scan(image, x, y, character = '', coordinates = {})
-      coordinates = { x1: 0, y1: 0, x2: image[0].size, y2: image.size } unless coordinates.any?
+      unless coordinates.any?
+        coordinates = Coordinates.new(x1: 0, y1: 0, x2: image[0].size, y2: image.size)
+      end
 
       Hash.new { |hash, key| hash[key] = [] }.tap do |result_mask|
         process_queue = Hash.new { |hash, key| hash[key] = [] }
         process_line = true
 
         loop do
-          break if y > coordinates[:y2] - 1 || y < coordinates[:y1]
+          break if y > coordinates.y2 - 1 || y < coordinates.y1
 
           reset_process = false
 
@@ -47,7 +49,7 @@ module RubyMarks
             loop do
               position = image[y][current_x]
 
-              break if position != character || current_x - 1 <= coordinates[:x1]
+              break if position != character || current_x - 1 <= coordinates.x1
 
               unless process_queue[y].include?(current_x) || result_mask[y].include?(current_x)
                 process_queue[y] << current_x
@@ -61,7 +63,7 @@ module RubyMarks
             loop do
               position = image[y][current_x]
 
-              break if position != character || current_x + 1 >= coordinates[:x2]
+              break if position != character || current_x + 1 >= coordinates.x2
 
               unless process_queue[y].include?(current_x) || result_mask[y].include?(current_x)
                 process_queue[y] << current_x
@@ -78,7 +80,7 @@ module RubyMarks
           process_line = true
 
           process_queue[y].each do |element|
-            next unless y - 1 >= coordinates[:y1]
+            next unless y - 1 >= coordinates.y1
 
             position = image[y - 1][element]
 
@@ -93,7 +95,7 @@ module RubyMarks
           next if reset_process
 
           process_queue[y].each do |element|
-            next unless y + 1 <= coordinates[:y2]
+            next unless y + 1 <= coordinates.y2
 
             position = image[y + 1] && image[y + 1][element]
 

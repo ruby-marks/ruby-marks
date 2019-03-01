@@ -1,7 +1,7 @@
 module RubyMarks
   class Group
-    attr_reader   :label, :recognizer
-    attr_accessor :mark_width, :mark_height, :marks_options, :coordinates, :expected_coordinates,
+    attr_reader   :label, :recognizer, :expected_coordinates
+    attr_accessor :mark_width, :mark_height, :marks_options, :coordinates,
                   :mark_width_tolerance, :mark_height_tolerance, :marks, :distance_between_marks,
                   :block_width_tolerance, :block_height_tolerance, :expected_lines
 
@@ -22,7 +22,7 @@ module RubyMarks
       @distance_between_marks = @recognizer.config.default_distance_between_marks
 
       @expected_lines = @recognizer.config.default_expected_lines
-      @expected_coordinates = {}
+      @expected_coordinates = Coordinates.new
       yield self if block_given?
     end
 
@@ -52,6 +52,10 @@ module RubyMarks
 
     def mark_height_tolerance_range
       mark_height_with_down_tolerance..mark_height_with_up_tolerance
+    end
+
+    def expected_coordinates=(expected_coordinates)
+      @expected_coordinates = Coordinates.new(expected_coordinates)
     end
   end
 end
