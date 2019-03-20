@@ -108,27 +108,37 @@ recognizer = RubyMarks::Recognizer.new
 recognizer.configure do |config|
   config.threshold_level = 90
   config.default_expected_lines = 5
-
-  config.define_group :first  do |group|
-    group.expected_coordinates = {x1: 34, y1: 6, x2: 160, y2: 134}
-  end
-
-  config.define_group :second do |group|
-    group.expected_coordinates = {x1: 258, y1: 6, x2: 388, y2: 134}
-  end
-
-  config.define_group :third  do |group|
-    group.expected_coordinates = {x1: 486, y1: 6, x2: 614, y2: 134}
-  end
-
-  config.define_group :fourth do |group|
-    group.expected_coordinates = {x1: 714, y1: 6, x2: 844, y2: 134}
-  end
-
-  config.define_group :fifth  do |group|
-    group.expected_coordinates = {x1: 942, y1: 6, x2: 1068, y2: 134}
-  end
 end
+
+groups = [
+  RubyMarks::Group.new(
+    label: :first,
+    recognizer: recognizer,
+    expected_coordinates: { x1: 34, y1: 6, x2: 160, y2: 134 }
+  ),
+  RubyMarks::Group.new(
+    label: :second,
+    recognizer: recognizer,
+    expected_coordinates: { x1: 258, y1: 6, x2: 388, y2: 134 }
+  ),
+  RubyMarks::Group.new(
+    label: :third,
+    recognizer: recognizer,
+    expected_coordinates: { x1: 486, y1: 6, x2: 614, y2: 134 }
+  ),
+  RubyMarks::Group.new(
+    label: :fourth,
+    recognizer: recognizer,
+    expected_coordinates: { x1: 714, y1: 6, x2: 844, y2: 134 }
+  ),
+  RubyMarks::Group.new(
+    label: :fifth,
+    recognizer: recognizer,
+    expected_coordinates: { x1: 942, y1: 6, x2: 1068, y2: 134 }
+  )
+]
+
+groups.each { |group| recognizer.add_group(group) }
 ```
 
 

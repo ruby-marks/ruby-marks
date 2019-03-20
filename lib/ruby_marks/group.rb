@@ -1,13 +1,14 @@
 module RubyMarks
   class Group
-    attr_reader   :label, :recognizer
-    attr_accessor :mark_width, :mark_height, :marks_options, :coordinates, :expected_coordinates,
+    attr_reader   :label, :recognizer, :marks_options
+    attr_accessor :mark_width, :mark_height, :coordinates, :expected_coordinates,
                   :mark_width_tolerance, :mark_height_tolerance, :marks, :distance_between_marks,
                   :block_width_tolerance, :block_height_tolerance, :expected_lines
 
-    def initialize(label, recognizer)
-      @label = label
-      @recognizer = recognizer
+    def initialize(params = {})
+      @label = params[:label]
+      @recognizer = params[:recognizer]
+      @expected_coordinates = params[:expected_coordinates] || {}
 
       @block_width_tolerance  = @recognizer.config.default_block_width_tolerance
       @block_height_tolerance = @recognizer.config.default_block_height_tolerance
@@ -18,11 +19,10 @@ module RubyMarks
       @mark_width_tolerance  = @recognizer.config.default_mark_width_tolerance
       @mark_height_tolerance = @recognizer.config.default_mark_height_tolerance
 
-      @marks_options = @recognizer.config.default_marks_options
+      @marks_options = params[:marks_options] || @recognizer.config.default_marks_options
       @distance_between_marks = @recognizer.config.default_distance_between_marks
 
       @expected_lines = @recognizer.config.default_expected_lines
-      @expected_coordinates = {}
       yield self if block_given?
     end
 
