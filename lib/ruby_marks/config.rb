@@ -33,11 +33,6 @@ module RubyMarks
       Magick::QuantumRange * (@threshold_level.to_f / 100)
     end
 
-    def define_group(group_label, &block)
-      group = RubyMarks::Group.new(group_label, @recognizer, &block)
-      @recognizer.add_group(group)
-    end
-
     def configure
       yield self if block_given?
     end
