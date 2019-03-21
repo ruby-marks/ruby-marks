@@ -120,14 +120,14 @@ module RubyMarks
       if @config.scan_mode == :grid
         scanner = FloodScan.new(@file.dup)
         @groups.each_pair do |_label, group|
-          group_center = ImageUtils.image_center(group.expected_coordinates)
+          group_center = group.expected_coordinates.center
           x = group_center[:x]
           y = group_center[:y]
-          width = ImageUtils.calc_width(*group.expected_coordinates.values_at(:x1, :x2))
-          height = ImageUtils.calc_height(*group.expected_coordinates.values_at(:y1, :y2))
+          width = group.expected_coordinates.width
+          height = group.expected_coordinates.height
           block = scanner.scan(Magick::Point.new(x, y), width, height)
           if !block.empty?
-            group.coordinates = coordinate(block)
+            group.coordinates = Coordinates.new(block)
             marks_blocks = find_marks_grid(group)
             marks_blocks.each do |mark|
               mark_width  = ImageUtils.calc_width(mark[:x1], mark[:x2])
@@ -155,12 +155,12 @@ module RubyMarks
           next unless group.expected_coordinates.any?
 
           line = 0
-          group_center = ImageUtils.image_center(group.expected_coordinates)
+          group_center = group.expected_coordinates.center
 
           block = find_block_marks(file_str, group_center[:x], group_center[:y], group)
           next unless block
 
-          group.coordinates = coordinate(block)
+          group.coordinates = Coordinates.new(block)
           marks_blocks = find_marks(original_file_str, group)
           marks_blocks.sort! { |a, b| a[:y1] <=> b[:y1] }
           mark_ant = nil
@@ -298,10 +298,10 @@ module RubyMarks
     def find_block_marks(image, x, y, group)
       expected_coordinates = group.expected_coordinates
       found_blocks = []
-      expected_width  = ImageUtils.calc_width(*expected_coordinates.values_at(:x1, :x2))
-      expected_height = ImageUtils.calc_height(*expected_coordinates.values_at(:y1, :y2))
+      expected_width  = expected_coordinates.width
+      expected_height = expected_coordinates.height
       block = nil
-      while x <= expected_coordinates[:x2] && y <= expected_coordinates[:y2]
+      while x <= expected_coordinates.x2 && y <= expected_coordinates.y2
         if image[y] && image[y][x] == ' '
           block = find_in_blocks(found_blocks, x, y)
           unless block
@@ -373,10 +373,10 @@ module RubyMarks
         distance_col = group.mark_width
         lines.times do |lin|
           columns.times do |col|
-            chunks << { x1: block[:x1] + (col * distance_col),
-                        y1: block[:y1] + (lin * distance_lin),
-                        x2: block[:x1] + (col * distance_col) + distance_col,
-                        y2: block[:y1] + (lin * distance_lin) + distance_lin,
+            chunks << { x1: block.x1 + (col * distance_col),
+                        y1: block.y1 + (lin * distance_lin),
+                        x2: block.x1 + (col * distance_col) + distance_col,
+                        y2: block.y1 + (lin * distance_lin) + distance_lin,
                         line: lin + 1 }
           end
         end
@@ -389,12 +389,12 @@ module RubyMarks
     # rubocop:disable Metrics/BlockNesting
     def find_marks(image, group)
       block = group.coordinates
-      y = block[:y1]
+      y = block.y1
       blocks = []
       blocks.tap do |chunks|
-        while y < block[:y2]
-          x = block[:x1]
-          while x < block[:x2]
+        while y < block.y2
+          x = block.x1
+          while x < block.x2
             if image[y][x] == ' '
               x += 1
               next

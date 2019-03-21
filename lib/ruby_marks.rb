@@ -37,6 +37,7 @@ module RubyMarks
   require_relative 'ruby_marks/mark'
   require_relative 'ruby_marks/recognizer'
   require_relative 'ruby_marks/watcher'
+  require_relative 'ruby_marks/coordinates'
 
   module FloodScanProcessors
     require_relative 'ruby_marks/utils/flood_scan_processors/node_processor'
