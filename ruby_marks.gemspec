@@ -15,7 +15,6 @@ Gem::Specification.new do |s|
   s.test_files              = Dir['test/**/*']
   s.require_paths           = ['lib']
   s.licenses                = ['MIT']
-  s.rubyforge_project       = 'ruby_marks'
   # s.extra_rdoc_files        = ['README.md']
 
   # Dependencies
