@@ -79,6 +79,7 @@ module RubyMarks
         begin
           Timeout.timeout(@config.scan_timeout) do
             detect_groups unless @groups_detected
+            detect_mark_blocks
           end
         rescue Timeout::Error
           raise_watcher :timed_out_watcher
@@ -108,6 +109,52 @@ module RubyMarks
         end
       end
     end
+
+    def find_map_lines(marks_blocks, group)
+      line = 0
+      mark_ant = nil
+      marks_blocks.sort! { |a, b| a[:y1] <=> b[:y1] }
+
+      marks_blocks.each do |mark|
+        mark_width  = ImageUtils.calc_width(mark[:x1], mark[:x2])
+        mark_height = ImageUtils.calc_height(mark[:y1], mark[:y2])
+
+        next unless mark_width >= group.mark_width_with_down_tolerance &&
+                    mark_height >= group.mark_height_with_down_tolerance
+
+        mark_positions = mark[:y1] - 10..mark[:y1] + 10
+        line += 1 unless mark_ant && mark_positions.include?(mark_ant[:y1])
+        mark[:line] = line
+        mark_ant = mark
+      end
+
+      # remove marks not mapped
+      marks_blocks.delete_if { |m| m[:line].nil? }
+    end
+
+    def detect_mark_blocks
+      groups.each_pair do |label, group|
+         marks_blocks = if config.scan_mode == :grid
+            find_marks_grid(group)
+          else
+            original_file_str = ImageUtils.export_file_to_str(@original_file)
+            find_marks(original_file_str, group)
+          end
+
+        marks_blocks.each do |mark|
+          mark_width  = ImageUtils.calc_width(mark[:x1], mark[:x2])
+          mark_height = ImageUtils.calc_height(mark[:y1], mark[:y2])
+          mark_file = @original_file.crop(mark[:x1], mark[:y1], mark_width, mark_height)
+          o_mark = Mark.new group: group,
+                            coordinates: coordinate(mark),
+                            image_str: ImageUtils.export_file_to_str(mark_file),
+                            line: mark[:line]
+
+          group.marks[mark[:line]] << o_mark
+        end
+      end
+    end
+
     # rubocop:enable Metrics/MethodLength
     # rubocop:enable Metrics/CyclomaticComplexity
     # rubocop:enable Metrics/PerceivedComplexity
@@ -116,176 +163,195 @@ module RubyMarks
     # rubocop:disable Metrics/CyclomaticComplexity
     # rubocop:disable Metrics/PerceivedComplexity
     # rubocop:disable Metrics/BlockNesting
+
+
     def detect_groups
-      if @config.scan_mode == :grid
-        scanner = FloodScan.new(@file.dup)
-        @groups.each_pair do |_label, group|
-          group_center = group.expected_coordinates.center
-          x = group_center[:x]
-          y = group_center[:y]
-          width = group.expected_coordinates.width
-          height = group.expected_coordinates.height
-          block = scanner.scan(Magick::Point.new(x, y), width, height)
-          if !block.empty?
-            group.coordinates = Coordinates.new(block)
-            marks_blocks = find_marks_grid(group)
-            marks_blocks.each do |mark|
-              mark_width  = ImageUtils.calc_width(mark[:x1], mark[:x2])
-              mark_height = ImageUtils.calc_height(mark[:y1], mark[:y2])
-              mark_file = @original_file.crop(mark[:x1], mark[:y1], mark_width, mark_height)
-              o_mark = Mark.new group: group,
-                                coordinates: coordinate(mark),
-                                image_str: ImageUtils.export_file_to_str(mark_file),
-                                line: mark[:line]
+      scanner = FloodScan.new(@file.dup)
+      @groups.each_pair do |_label, group|
+        group_center = group.expected_coordinates.center
+        x = group_center[:x]
+        y = group_center[:y]
+        width = group.expected_coordinates.width
+        height = group.expected_coordinates.height
+        block = scanner.scan(Magick::Point.new(x, y), width, height)
 
-              group.marks[mark[:line]] << o_mark
-            end
-          else
-            @groups_not_detected << group.label
-          end
-        end
-      else
-        file_str = ImageUtils.export_file_to_str(@file)
-        original_file_str = ImageUtils.export_file_to_str(@original_file)
-        incorrect_bubble_line_found = Hash.new { |hash, key| hash[key] = [] }
-        bubbles_adjusted = []
-        incorrect_expected_lines = false
-
-        @groups.each_pair do |_label, group|
-          next unless group.expected_coordinates.any?
-
-          line = 0
-          group_center = group.expected_coordinates.center
-
-          block = find_block_marks(file_str, group_center[:x], group_center[:y], group)
-          next unless block
-
+        if block.any?
           group.coordinates = Coordinates.new(block)
-          marks_blocks = find_marks(original_file_str, group)
-          marks_blocks.sort! { |a, b| a[:y1] <=> b[:y1] }
-          mark_ant = nil
-          marks_blocks.each do |mark|
-            mark_width  = ImageUtils.calc_width(mark[:x1], mark[:x2])
-            mark_height = ImageUtils.calc_height(mark[:y1], mark[:y2])
-
-            next unless mark_width >= group.mark_width_with_down_tolerance &&
-                        mark_height >= group.mark_height_with_down_tolerance
-
-            mark_positions = mark[:y1] - 10..mark[:y1] + 10
-            line += 1 unless mark_ant && mark_positions.include?(mark_ant[:y1])
-            mark[:line] = line
-            mark_ant = mark
-          end
-
-          marks_blocks.delete_if { |m| m[:line].nil? }
-          marks_blocks.sort_by! { |a| [a[:line], a[:x1]] }
-
-          mark_ant = nil
-          marks_blocks.each do |mark|
-            if mark_ant && mark_ant[:line] == mark[:line]
-              mark_ant_center = ImageUtils.image_center(mark_ant)
-              mark_center     = ImageUtils.image_center(mark)
-              if (mark_ant_center[:x] - mark_center[:x]).abs < 10
-                mark[:conflict] = true
-                mark[:conflicting_mark] = mark_ant
-              else
-                mark_ant = mark
-              end
-            else
-              mark_ant = mark
-            end
-          end
-          marks_blocks.delete_if { |m| m[:conflict] }
-
-          first_position = 0
-          elements_position_count = 0
-          marks_blocks.map { |m| m[:line] }.each do |dash|
-            marks = marks_blocks.select { |m| m[:line] == dash }
-            if marks.count == group.marks_options.count
-              first_position += marks.first[:x1]
-              elements_position_count += 1
-            end
-          end
-
-          if elements_position_count.positive?
-            first_position /= elements_position_count
-            distance = group.distance_between_marks * (group.marks_options.count - 1)
-            last_position = first_position + distance
-            marks_blocks.delete_if do |mark|
-              mark[:x1] < first_position - 10 ||
-                mark[:x1] > last_position + 10
-            end
-
-            marks_blocks.map { |m| m[:line] }.each do |dash|
-              loop do
-                reprocess = false
-                marks = marks_blocks.select { |m| m[:line] == dash }
-                marks.each_with_index do |current_mark, index|
-                  if index.zero?
-                    first_mark_position = first_position - 5..first_position + 5
-                    unless first_mark_position.include?(current_mark[:x1])
-                      new_mark = { x1: first_position,
-                                   x2: first_position + group.mark_width,
-                                   y1: current_mark[:y1],
-                                   y2: current_mark[:y1] + group.mark_height,
-                                   line: dash }
-                      marks_blocks << new_mark
-                      marks_blocks.sort_by! { |a| [a[:line], a[:x1]] }
-                      bubbles_adjusted << new_mark
-                      reprocess = true
-                      break
-                    end
-                  end
-                  next_mark = marks[index + 1]
-                  distance = 0
-                  distance = next_mark[:x1] - current_mark[:x1] if next_mark
-                  next unless distance > group.distance_between_marks + 10 ||
-                              next_mark.nil? && index + 1 < group.marks_options.count
-
-                  new_x1 = current_mark[:x1] + group.distance_between_marks
-                  new_mark = { x1: new_x1,
-                               x2: new_x1 + group.mark_width,
-                               y1: current_mark[:y1],
-                               y2: current_mark[:y1] + group.mark_height,
-                               line: dash }
-                  marks_blocks << new_mark
-                  marks_blocks.sort_by! { |a| [a[:line], a[:x1]] }
-                  bubbles_adjusted << new_mark
-                  reprocess = true
-                  break
-                end
-                break unless reprocess
-              end
-            end
-
-          end
-
-          marks_blocks.each do |mark|
-            mark_width  = ImageUtils.calc_width(mark[:x1], mark[:x2])
-            mark_height = ImageUtils.calc_height(mark[:y1], mark[:y2])
-            mark_file = @original_file.crop(mark[:x1], mark[:y1], mark_width, mark_height)
-            o_mark = Mark.new group: group,
-                              coordinates: coordinate(mark),
-                              image_str: ImageUtils.export_file_to_str(mark_file),
-                              line: mark[:line]
-            group.marks[mark[:line]] << o_mark if mark[:line] <= group.expected_lines
-          end
-
-          incorrect_expected_lines = group.incorrect_expected_lines
-
-          group.marks.each_pair do |dash, marks|
-            if marks.count != group.marks_options.count
-              incorrect_bubble_line_found[group.label.to_sym] << dash
-            end
-          end
-        end
-        @groups_detected = true
-        if incorrect_bubble_line_found.any? || bubbles_adjusted.any? || incorrect_expected_lines
-          raise_watcher :incorrect_group_watcher,
-                    incorrect_expected_lines, incorrect_bubble_line_found, bubbles_adjusted.flatten
+        else
+          @groups_not_detected << group.label
         end
       end
     end
+
+      # if @config.scan_mode == :grid
+      #   scanner = FloodScan.new(@file.dup)
+      #   @groups.each_pair do |_label, group|
+      #     group_center = group.expected_coordinates.center
+      #     x = group_center[:x]
+      #     y = group_center[:y]
+      #     width = group.expected_coordinates.width
+      #     height = group.expected_coordinates.height
+      #     block = scanner.scan(Magick::Point.new(x, y), width, height)
+      #     if !block.empty?
+      #       group.coordinates = Coordinates.new(block)
+      #       marks_blocks = find_marks_grid(group)
+      #       marks_blocks.each do |mark|
+      #         mark_width  = ImageUtils.calc_width(mark[:x1], mark[:x2])
+      #         mark_height = ImageUtils.calc_height(mark[:y1], mark[:y2])
+      #         mark_file = @original_file.crop(mark[:x1], mark[:y1], mark_width, mark_height)
+      #         o_mark = Mark.new group: group,
+      #                           coordinates: coordinate(mark),
+      #                           image_str: ImageUtils.export_file_to_str(mark_file),
+      #                           line: mark[:line]
+
+      #         group.marks[mark[:line]] << o_mark
+      #       end
+      #     else
+      #       @groups_not_detected << group.label
+      #     end
+      #   end
+      # else
+      #   file_str = ImageUtils.export_file_to_str(@file)
+      #   original_file_str = ImageUtils.export_file_to_str(@original_file)
+      #   incorrect_bubble_line_found = Hash.new { |hash, key| hash[key] = [] }
+      #   bubbles_adjusted = []
+      #   incorrect_expected_lines = false
+
+      #   @groups.each_pair do |_label, group|
+      #     next unless group.expected_coordinates.any?
+
+      #     line = 0
+      #     group_center = group.expected_coordinates.center
+
+      #     block = find_block_marks(file_str, group_center[:x], group_center[:y], group)
+      #     next unless block
+
+      #     group.coordinates = Coordinates.new(block)
+      #     marks_blocks = find_marks(original_file_str, group)
+      #     marks_blocks.sort! { |a, b| a[:y1] <=> b[:y1] }
+      #     mark_ant = nil
+      #     marks_blocks.each do |mark|
+      #       mark_width  = ImageUtils.calc_width(mark[:x1], mark[:x2])
+      #       mark_height = ImageUtils.calc_height(mark[:y1], mark[:y2])
+
+      #       next unless mark_width >= group.mark_width_with_down_tolerance &&
+      #                   mark_height >= group.mark_height_with_down_tolerance
+
+      #       mark_positions = mark[:y1] - 10..mark[:y1] + 10
+      #       line += 1 unless mark_ant && mark_positions.include?(mark_ant[:y1])
+      #       mark[:line] = line
+      #       mark_ant = mark
+      #     end
+
+      #     marks_blocks.delete_if { |m| m[:line].nil? }
+      #     marks_blocks.sort_by! { |a| [a[:line], a[:x1]] }
+
+      #     mark_ant = nil
+      #     marks_blocks.each do |mark|
+      #       if mark_ant && mark_ant[:line] == mark[:line]
+      #         mark_ant_center = ImageUtils.image_center(mark_ant)
+      #         mark_center     = ImageUtils.image_center(mark)
+      #         if (mark_ant_center[:x] - mark_center[:x]).abs < 10
+      #           mark[:conflict] = true
+      #           mark[:conflicting_mark] = mark_ant
+      #         else
+      #           mark_ant = mark
+      #         end
+      #       else
+      #         mark_ant = mark
+      #       end
+      #     end
+      #     marks_blocks.delete_if { |m| m[:conflict] }
+
+      #     first_position = 0
+      #     elements_position_count = 0
+      #     marks_blocks.map { |m| m[:line] }.each do |dash|
+      #       marks = marks_blocks.select { |m| m[:line] == dash }
+      #       if marks.count == group.marks_options.count
+      #         first_position += marks.first[:x1]
+      #         elements_position_count += 1
+      #       end
+      #     end
+
+      #     if elements_position_count.positive?
+      #       first_position /= elements_position_count
+      #       distance = group.distance_between_marks * (group.marks_options.count - 1)
+      #       last_position = first_position + distance
+      #       marks_blocks.delete_if do |mark|
+      #         mark[:x1] < first_position - 10 ||
+      #           mark[:x1] > last_position + 10
+      #       end
+
+      #       marks_blocks.map { |m| m[:line] }.each do |dash|
+      #         loop do
+      #           reprocess = false
+      #           marks = marks_blocks.select { |m| m[:line] == dash }
+      #           marks.each_with_index do |current_mark, index|
+      #             if index.zero?
+      #               first_mark_position = first_position - 5..first_position + 5
+      #               unless first_mark_position.include?(current_mark[:x1])
+      #                 new_mark = { x1: first_position,
+      #                              x2: first_position + group.mark_width,
+      #                              y1: current_mark[:y1],
+      #                              y2: current_mark[:y1] + group.mark_height,
+      #                              line: dash }
+      #                 marks_blocks << new_mark
+      #                 marks_blocks.sort_by! { |a| [a[:line], a[:x1]] }
+      #                 bubbles_adjusted << new_mark
+      #                 reprocess = true
+      #                 break
+      #               end
+      #             end
+      #             next_mark = marks[index + 1]
+      #             distance = 0
+      #             distance = next_mark[:x1] - current_mark[:x1] if next_mark
+      #             next unless distance > group.distance_between_marks + 10 ||
+      #                         next_mark.nil? && index + 1 < group.marks_options.count
+
+      #             new_x1 = current_mark[:x1] + group.distance_between_marks
+      #             new_mark = { x1: new_x1,
+      #                          x2: new_x1 + group.mark_width,
+      #                          y1: current_mark[:y1],
+      #                          y2: current_mark[:y1] + group.mark_height,
+      #                          line: dash }
+      #             marks_blocks << new_mark
+      #             marks_blocks.sort_by! { |a| [a[:line], a[:x1]] }
+      #             bubbles_adjusted << new_mark
+      #             reprocess = true
+      #             break
+      #           end
+      #           break unless reprocess
+      #         end
+      #       end
+
+      #     end
+
+      #     marks_blocks.each do |mark|
+      #       mark_width  = ImageUtils.calc_width(mark[:x1], mark[:x2])
+      #       mark_height = ImageUtils.calc_height(mark[:y1], mark[:y2])
+      #       mark_file = @original_file.crop(mark[:x1], mark[:y1], mark_width, mark_height)
+      #       o_mark = Mark.new group: group,
+      #                         coordinates: coordinate(mark),
+      #                         image_str: ImageUtils.export_file_to_str(mark_file),
+      #                         line: mark[:line]
+      #       group.marks[mark[:line]] << o_mark if mark[:line] <= group.expected_lines
+      #     end
+
+      #     incorrect_expected_lines = group.incorrect_expected_lines
+
+      #     group.marks.each_pair do |dash, marks|
+      #       if marks.count != group.marks_options.count
+      #         incorrect_bubble_line_found[group.label.to_sym] << dash
+      #       end
+      #     end
+      #   end
+      #   @groups_detected = true
+      #   if incorrect_bubble_line_found.any? || bubbles_adjusted.any? || incorrect_expected_lines
+      #     raise_watcher :incorrect_group_watcher,
+      #               incorrect_expected_lines, incorrect_bubble_line_found, bubbles_adjusted.flatten
+      #   end
+      # end
+    # end
     # rubocop:enable Metrics/MethodLength
     # rubocop:enable Metrics/CyclomaticComplexity
     # rubocop:enable Metrics/PerceivedComplexity
@@ -435,6 +501,8 @@ module RubyMarks
           y += 1
         end
       end
+
+      find_map_lines(blocks, group)
     end
     # rubocop:enable Metrics/CyclomaticComplexity
     # rubocop:enable Metrics/MethodLength
