@@ -31,7 +31,7 @@ On Ubuntu, the `apt-get` should be enough:
 
     apt-get install imagemagick libmagickcore-dev libmagickwand-dev
 
-Note that if you try to install this gem in Ubuntu, then error can happened:
+Note that if you try to install this gem in Ubuntu, this error could happen:
 
     Can't install RMagick 2.13.1. Can't find Magick-config in ...
 
