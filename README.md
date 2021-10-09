@@ -1,15 +1,15 @@
-Ruby Marks
-==========
+# Ruby Marks
 
 [![Build Status](https://travis-ci.org/ruby-marks/ruby-marks.svg?branch=master)](https://travis-ci.org/ruby-marks/ruby-marks)
 [![Maintainability](https://api.codeclimate.com/v1/badges/c6cbd936857fd70812dc/maintainability)](https://codeclimate.com/github/ruby-marks/ruby-marks/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/c6cbd936857fd70812dc/test_coverage)](https://codeclimate.com/github/ruby-marks/ruby-marks/test_coverage)
 
+![rspec workflow](https://github.com/ruby-marks/ruby-marks/actions/workflows/rspec.yml/badge.svg)
+![rubocop workflow](https://github.com/ruby-marks/ruby-marks/actions/workflows/rubocop.yml/badge.svg)
+
 A simple OMR ([Optical Mark Recognition](http://en.wikipedia.org/wiki/Optical_mark_recognition)) gem for ruby.
 
-
-Requirements
-------------
+## Requirements
 
 This gem uses [ImageMagick](http://www.imagemagick.org) (version 6.8+) to manipulate the given images.
 
@@ -25,24 +25,20 @@ If you're on Mac OS X, Homebrew may be your best option:
 
     brew install imagemagick
 
-
 ### Ubuntu
 
 On Ubuntu, the `apt-get` should be enough:
 
     apt-get install imagemagick
 
+## Supported versions
 
-Supported versions
-------------------
+- Ruby 2.3.x
+- Ruby 2.4.x
+- Ruby 2.5.x
+- Ruby 2.6.x
 
-* Ruby 2.3.x
-* Ruby 2.4.x
-* Ruby 2.5.x
-* Ruby 2.6.x
-
-Install
--------
+## Install
 
 If you are using `Bundler`, just put this line in your Gemfile:
 
@@ -64,9 +60,7 @@ And require it in your ruby code:
 require 'ruby_marks'
 ```
 
-
-How it Works
-------------
+## How it Works
 
 Using a template document, you should especify the expected area where each group is. By applying an edge detect algorithm
 it will discover where the groups are, and will check if they are near the expected position.
@@ -75,9 +69,7 @@ In the end, returns a hash with each correspondent mark found in the group.
 
 The gem will not perform deskew in your documents. If the document have a huge skew, then you should apply your own deskew method on the file before.
 
-
-Usage
------
+## Usage
 
 Unfortunatelly, this gem will require a bit more configuration to work, since the implementation depends
 a lot of your document sizes, positions, brightness, etc...
@@ -86,17 +78,14 @@ That said, lets describe it's basic structure. The example will assume a directo
 
 [![Document Example](https://raw.github.com/andrerpbts/ruby_marks/master/assets/sheet_demo2.png)](https://github.com/andrerpbts/ruby_marks/blob/master/assets/sheet_demo2.png)
 
-
 First, we will need to get the pixels coordinates, using one document as template, of the areas
 where the expected groups are. This image can explain where to pick each position:
 
 [![Document Example](https://raw.github.com/andrerpbts/ruby_marks/master/assets/sheet_demo2_group_coords.png)](https://github.com/andrerpbts/ruby_marks/blob/master/assets/sheet_demo2_group_coords.png)
 
-
 The threshold level should be adjusted too, in order to don't get a too bright or too polluted marks. See:
 
 [![Document Example](https://raw.github.com/andrerpbts/ruby_marks/master/assets/threshold_examples.png)](https://github.com/andrerpbts/ruby_marks/blob/master/assets/threshold_examples.png)
-
 
 Then, we write a basic code to scan it and print result on console (each option available are described bellow):
 
@@ -131,7 +120,6 @@ recognizer.configure do |config|
 end
 ```
 
-
 Then we need to adjust the edge level to make sure the groups are being highlighted enough to being recognized.
 You can see the image after the edge algorithm is applied if you write the file after submit it to Recognizer. Like this:
 
@@ -145,7 +133,6 @@ file.write(filename)
 The result image should be like this one (note that all the groups are separated from the rest of the document these white blocks):
 
 [![Document Example](https://raw.github.com/andrerpbts/ruby_marks/master/assets/sheet_demo2_edge.png)](https://github.com/andrerpbts/ruby_marks/blob/master/assets/sheet_demo2_edge.png)
-
 
 There's a method you can call to help you to identify how the document is being recognized. This method return the image
 with the showing where is the expected groups coordinates are, where are the actual groups coordinates, and where the marks
@@ -161,7 +148,6 @@ flagged_document.write(temp_filename)
 Will return the image below:
 
 [![Flagged Document Example](https://raw.github.com/andrerpbts/ruby_marks/master/assets/sheet_demo2_flagged.png)](https://github.com/andrerpbts/ruby_marks/blob/master/assets/sheet_demo2_flagged.png)
-
 
 With all this configured, we can submit our images to a scan:
 
@@ -215,10 +201,7 @@ And, this should puts each scan in a hash, like this:
 }
 ```
 
-
-
-General Configuration Options
------------------------------
+## General Configuration Options
 
 As you may see, it's necessary configure some document aspects to make this work properly. So, lets describe
 each general configuration option available:
@@ -260,7 +243,6 @@ config.scan_timeout = 0
 config.default_expected_lines = 20
 ```
 
-
 ### Default blocks sizes tolerances
 
 ```ruby
@@ -274,7 +256,6 @@ config.default_expected_lines = 20
 config.default_block_width_tolerance = 100
 config.default_block_height_tolerance = 100
 ```
-
 
 ### Default mark sizes
 
@@ -332,9 +313,7 @@ config.default_marks_options = %w{A B C D E}
 config.default_distance_between_marks = 25
 ```
 
-
-Group Configuration Options
----------------------------
+## Group Configuration Options
 
 The General Configuration Options is more generic for the entire document. So, you can have some particularities
 when defining a group. So:
@@ -398,9 +377,7 @@ group.distance_between_marks = RubyMarks.default_distance_between_marks
 group.expected_lines = @recognizer.config.default_expected_lines
 ```
 
-
-Watchers
---------
+## Watchers
 
 Sometimes, due some image flaws, the scan can't recognize some group, or a mark, or even recognize
 more than one mark in a clock row in the same group when it is not expected. Then, you can place some
@@ -409,7 +386,6 @@ in image and re-run the scan, for example.
 But, be advised, if you call the scan method again inside the watcher, you should make sure that you
 have a way to leave the watcher to avoid a endless loop. You always can check how many times the watcher
 got raised by checking in `recognizer.raised_watchers[:watcher_name]` hash.
-
 
 ### Scan Mark Watcher
 
@@ -472,17 +448,14 @@ recognizer.add_watcher :timed_out_watcher do |recognizer|
 end
 ```
 
-Contributing
-------------
+## Contributing
 
-* Fork it
-* Make your implementations
-* Send me a pull request
+- Fork it
+- Make your implementations
+- Send me a pull request
 
 Thank you!
 
-
-License
--------
+## License
 
 Copyright © 2012 André Rodrigues, Ronaldo Araújo, Rodrigo Virgilio, Lucas Correa. See MIT-LICENSE for further details.
