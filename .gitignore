@@ -21,3 +21,6 @@ temp_*
 
 .DS_Store
 vendor
+
+.tool-versions
+.env

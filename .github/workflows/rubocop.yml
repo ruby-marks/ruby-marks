@@ -1,0 +1,29 @@
+name: Rubocop
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  ruby_lint:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        ruby: [2.4.0, 2.5.0, 2.6.0]
+
+    steps:
+      - uses: actions/checkout@v2.3.4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+
+      - name: linter
+        run: bundle exec rubocop
