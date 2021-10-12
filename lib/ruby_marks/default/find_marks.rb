@@ -37,6 +37,11 @@ module RubyMarks
       end
 
       private
+
+      attr_reader :group, :image
+      attr_accessor :blocks, :bubbles_adjusted, :incorrect_bubble_line_found
+
+      def_delegator :@group, :incorrect_expected_lines, :incorrect_expected_lines
       
       def find_marks
         block = group.coordinates
@@ -49,39 +54,42 @@ module RubyMarks
               next
             end
 
-            result = find_in_blocks(x, y)
-            unless result
-              result = find_block(image, x, y, '.', block)
-
-              mark_width  = ImageUtils.calc_width(*result.values_at(:x1, :x2))
-              mark_height = ImageUtils.calc_height(*result.values_at(:y1, :y2))
-
-              if mark_width > group.mark_width_with_up_tolerance
-                distance_x1 = x - result[:x1]
-                distance_x2 = result[:x2] - x
-                if distance_x1 <= distance_x2
-                  result[:x2] = result[:x1] + group.mark_width
-                else
-                  result[:x1] = result[:x2] - group.mark_width
-                end
-              end
-
-              if mark_height > group.mark_height_with_up_tolerance
-                distance_y1 = y - result[:y1]
-                distance_y2 = result[:y2] - y
-                if distance_y1 <= distance_y2
-                  result[:y2] = result[:y1] + group.mark_height
-                else
-                  result[:y1] = result[:y2] - group.mark_height
-                end
-              end
-
-              blocks << result unless blocks.any? { |b| b == result }
-            end
+            found_block = find_in_blocks(x, y)
+            add_mark_in_blocks(x, y, block) unless found_block
+              
             x += 1
           end
           y += 1
         end
+      end
+
+      def add_mark_in_blocks(x, y, coordinates)
+        new_block = find_block(image, x, y, '.', coordinates)
+
+        mark_width  = ImageUtils.calc_width(*new_block.values_at(:x1, :x2))
+        mark_height = ImageUtils.calc_height(*new_block.values_at(:y1, :y2))
+
+        if mark_width > group.mark_width_with_up_tolerance
+          distance_x1 = x - new_block[:x1]
+          distance_x2 = new_block[:x2] - x
+          if distance_x1 <= distance_x2
+            new_block[:x2] = new_block[:x1] + group.mark_width
+          else
+            new_block[:x1] = new_block[:x2] - group.mark_width
+          end
+        end
+
+        if mark_height > group.mark_height_with_up_tolerance
+          distance_y1 = y - new_block[:y1]
+          distance_y2 = new_block[:y2] - y
+          if distance_y1 <= distance_y2
+            new_block[:y2] = new_block[:y1] + group.mark_height
+          else
+            new_block[:y1] = new_block[:y2] - group.mark_height
+          end
+        end
+
+        blocks << new_block unless blocks.any? { |b| b == new_block }
       end
 
       def find_block(image, x, y, character = ' ', coordinates = {})
@@ -106,9 +114,9 @@ module RubyMarks
       end
 
       def find_in_blocks(x, y)
-        blocks.find do |result|
-          result[:x1] <= x && result[:x2] >= x &&
-            result[:y1] <= y && result[:y2] >= y
+        blocks.find do |block|
+          block[:x1] <= x && block[:x2] >= x &&
+            block[:y1] <= y && block[:y2] >= y
         end
       end
 
@@ -118,11 +126,7 @@ module RubyMarks
         blocks.sort! { |a, b| a[:y1] <=> b[:y1] }
 
         blocks.each do |mark|
-          mark_width  = ImageUtils.calc_width(mark[:x1], mark[:x2])
-          mark_height = ImageUtils.calc_height(mark[:y1], mark[:y2])
-
-          next unless mark_width >= group.mark_width_with_down_tolerance &&
-                      mark_height >= group.mark_height_with_down_tolerance
+          next unless mark_is_out_of_group?(mark, group)
 
           mark_positions = mark[:y1] - 10..mark[:y1] + 10
           line += 1 unless mark_ant && mark_positions.include?(mark_ant[:y1])
@@ -134,6 +138,14 @@ module RubyMarks
         blocks.delete_if { |m| m[:line].nil? }
         # sort by lines
         blocks.sort_by! { |a| [a[:line], a[:x1]] }
+      end
+
+      def mark_is_out_of_group?(mark, group)
+        mark_width  = ImageUtils.calc_width(mark[:x1], mark[:x2])
+        mark_height = ImageUtils.calc_height(mark[:y1], mark[:y2])
+
+        mark_width >= group.mark_width_with_down_tolerance &&
+                      mark_height >= group.mark_height_with_down_tolerance
       end
 
       def delete_conflicts
@@ -226,11 +238,6 @@ module RubyMarks
           end
         end
       end
-
-      attr_reader :group, :image
-      attr_accessor :blocks, :bubbles_adjusted, :incorrect_bubble_line_found
-
-      def_delegator :@group, :incorrect_expected_lines, :incorrect_expected_lines
     end
   end
 end
