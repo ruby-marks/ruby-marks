@@ -149,7 +149,7 @@ module RubyMarks
 
     def detect_groups
       scanner = FloodScan.new(@file.dup)
-      @groups.each_pair do |_label, group|
+      groups.each_pair do |_label, group|
         group_center = group.expected_coordinates.center
         x = group_center[:x]
         y = group_center[:y]
@@ -194,7 +194,7 @@ module RubyMarks
           return file
         end
 
-        @groups.each_pair do |_label, group|
+        groups.each_pair do |_label, group|
           dr = Magick::Draw.new
           dr.stroke_width = 5
           dr.stroke(COLORS[3])
