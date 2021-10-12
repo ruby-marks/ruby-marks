@@ -15,6 +15,8 @@ module RubyMarks
       end
 
       private
+      
+      attr_reader :group
 
       def find_marks
         block = group.coordinates
@@ -35,8 +37,6 @@ module RubyMarks
           end
         end
       end
-      
-      attr_reader :group
     end
   end
 end
