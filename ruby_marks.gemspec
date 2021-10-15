@@ -25,7 +25,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'rspec', '~> 3.0'
   s.add_development_dependency 'rubocop', '~> 0.64.0'
 
-  s.add_dependency 'rmagick', '2.13.2'
+  s.add_dependency 'rmagick', '2.13.4'
 
   magick_version = system('convert -version')
 
