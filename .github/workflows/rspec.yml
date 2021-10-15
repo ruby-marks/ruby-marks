@@ -1,0 +1,40 @@
+name: RSpec
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  specs:
+    runs-on: ubuntu-latest
+    env:
+      RAILS_ENV: test
+      CI: true
+
+    strategy:
+      matrix:
+        ruby: [2.5.0, 2.6.0]
+
+    steps:
+      - uses: actions/checkout@v2.3.4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+
+      - name: specs
+        run: |
+          bundle exec rspec
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@master
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage
