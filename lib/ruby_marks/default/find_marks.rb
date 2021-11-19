@@ -196,10 +196,10 @@ module RubyMarks
                   first_mark_position = first_position - 5..first_position + 5
                   unless first_mark_position.include?(current_mark[:x1])
                     new_mark = { x1: first_position,
-                                x2: first_position + group.mark_width,
-                                y1: current_mark[:y1],
-                                y2: current_mark[:y1] + group.mark_height,
-                                line: dash }
+                                 x2: first_position + group.mark_width,
+                                 y1: current_mark[:y1],
+                                 y2: current_mark[:y1] + group.mark_height,
+                                 line: dash }
                     blocks << new_mark
                     blocks.sort_by! { |a| [a[:line], a[:x1]] }
                     bubbles_adjusted << new_mark
@@ -215,10 +215,10 @@ module RubyMarks
 
                 new_x1 = current_mark[:x1] + group.distance_between_marks
                 new_mark = { x1: new_x1,
-                            x2: new_x1 + group.mark_width,
-                            y1: current_mark[:y1],
-                            y2: current_mark[:y1] + group.mark_height,
-                            line: dash }
+                             x2: new_x1 + group.mark_width,
+                             y1: current_mark[:y1],
+                             y2: current_mark[:y1] + group.mark_height,
+                             line: dash }
                 blocks << new_mark
                 blocks.sort_by! { |a| [a[:line], a[:x1]] }
                 bubbles_adjusted << new_mark
