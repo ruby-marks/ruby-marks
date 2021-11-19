@@ -25,13 +25,23 @@ If you're on Mac OS X, Homebrew may be your best option:
 
     brew install imagemagick
 
-
 ### Ubuntu
 
 On Ubuntu, the `apt-get` should be enough:
 
-    apt-get install imagemagick
+    apt-get install imagemagick libmagickcore-dev libmagickwand-dev
 
+Note that if you try to install this gem in Ubuntu, this error could happen:
+
+    Can't install RMagick 2.13.1. Can't find Magick-config in ...
+
+All you need is preload PATH variable with additional path to ImageMagick lib, like this:
+
+    export PATH="/usr/lib/x86_64-linux-gnu/ImageMagick-VERSION/bin-Q16:$PATH"
+
+then run:
+
+    gem install rmagick
 
 Supported versions
 ------------------

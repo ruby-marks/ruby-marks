@@ -38,6 +38,8 @@ module RubyMarks
   require_relative 'ruby_marks/recognizer'
   require_relative 'ruby_marks/watcher'
   require_relative 'ruby_marks/coordinates'
+  require_relative 'ruby_marks/grid/find_marks'
+  require_relative 'ruby_marks/default/find_marks'
 
   module FloodScanProcessors
     require_relative 'ruby_marks/utils/flood_scan_processors/node_processor'
